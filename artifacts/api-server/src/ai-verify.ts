@@ -9,7 +9,7 @@ const ai = new GoogleGenAI({
     : {}),
 });
 
-const GEMINI_MODEL = isReplitProxy ? "gemini-3-flash-preview" : "gemini-2.0-flash-lite";
+const GEMINI_MODEL = isReplitProxy ? "gemini-2.5-flash-preview-04-17" : "gemini-2.5-flash";
 
 export interface CINVerificationResult {
   cinNumberMatch: boolean | null;
@@ -141,6 +141,7 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     }
   } catch (err) {
     console.error("AI CIN verification error:", err);
+    result.warnings.push("not_a_cin_document");
   }
 
   return result;
@@ -210,6 +211,7 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     if (result.expiryDate === null && result.expired === null) result.warnings.push("no_data_extracted");
   } catch (err) {
     console.error("AI carte grise verification error:", err);
+    result.warnings.push("not_a_carte_grise_document");
   }
 
   return result;
@@ -269,6 +271,7 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     if (result.cinNumberExtracted === null) result.warnings.push("no_data_extracted");
   } catch (err) {
     console.error("AI license front verification error:", err);
+    result.warnings.push("not_a_license_document");
   }
 
   return result;
@@ -333,6 +336,7 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     if (result.expiryDate === null && result.expired === null) result.warnings.push("no_data_extracted");
   } catch (err) {
     console.error("AI license back verification error:", err);
+    result.warnings.push("not_a_license_document");
   }
 
   return result;
