@@ -101,6 +101,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
+  app.get("/api/healthz", (_req, res) => {
+    res.json({ status: "ok", ts: Date.now() });
+  });
+
   // Placeholder image endpoint for admin panel
   app.get("/api/placeholder/:width/:height", (req, res) => {
     const w = parseInt(req.params.width) || 40;
