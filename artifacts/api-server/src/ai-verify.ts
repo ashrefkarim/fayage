@@ -91,14 +91,16 @@ export async function verifyCINDocuments(params: {
 
 Today's date: ${today}
 
-Examine the CIN card image and extract:
+First, determine if this image is actually a Moroccan CIN card. Set "is_valid_document" to false if the image is clearly not a CIN card (e.g. it is a random photo, selfie, landscape, or unrelated document).
+
+If it IS a CIN card, extract:
 1. The CIN number: 1-2 uppercase letters followed by 5-7 digits (e.g. AB123456, A123456, BE987654)
 2. The expiry date labeled "Valable jusqu'au" on the card (format DD/MM/YYYY)
 3. Whether the card is expired: compare expiry date to today ${today}
 4. The date of birth labeled "Date de naissance" or "تاريخ الازدياد" on the card (format DD/MM/YYYY)
 
 Respond with ONLY a raw JSON object, no markdown, no explanation:
-{"cin_number":"<extracted or null>","expiry_date":"<DD/MM/YYYY or null>","is_expired":<true|false|null>,"date_of_birth":"<DD/MM/YYYY or null>"}`;
+{"is_valid_document":<true|false>,"cin_number":"<extracted or null>","expiry_date":"<DD/MM/YYYY or null>","is_expired":<true|false|null>,"date_of_birth":"<DD/MM/YYYY or null>"}`;
 
   try {
     const response = await ai.models.generateContent({
@@ -115,6 +117,11 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     if (!jsonStr) throw new Error(`No JSON found in: ${raw.slice(0, 150)}`);
     const parsed = JSON.parse(jsonStr);
 
+    if (parsed.is_valid_document === false) {
+      result.warnings.push("not_a_cin_document");
+      return result;
+    }
+
     result.cinNumberExtracted = parsed.cin_number ?? null;
     result.expiryDate = parsed.expiry_date ?? null;
     result.expired = parsed.is_expired ?? null;
@@ -129,6 +136,9 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     if (result.expired === true) result.warnings.push("CIN expired");
     if (result.cinNumberMatch === false) result.warnings.push("CIN number mismatch");
     if (result.underAge === true) result.warnings.push("Driver under 18");
+    if (result.cinNumberExtracted === null && result.expiryDate === null && result.dateOfBirth === null) {
+      result.warnings.push("no_data_extracted");
+    }
   } catch (err) {
     console.error("AI CIN verification error:", err);
   }
@@ -160,12 +170,14 @@ export async function verifyCarteGrise(params: {
 
 Today's date: ${today}
 
-Examine the FRONT of this Moroccan carte grise and extract the expiry date.
+First, determine if this image is actually a Moroccan Carte Grise (vehicle registration). Set "is_valid_document" to false if the image is clearly not a carte grise (e.g. it is a random photo, selfie, landscape, or unrelated document).
+
+If it IS a carte grise, extract the expiry date.
 Look for "Date de fin de validité", "Valable jusqu'au", "Expire le", or similar label.
 The date format is DD/MM/YYYY.
 
 Respond with ONLY a raw JSON object, no markdown, no explanation:
-{"expiry_date":"<DD/MM/YYYY or null>","is_expired":<true|false|null>}`;
+{"is_valid_document":<true|false>,"expiry_date":"<DD/MM/YYYY or null>","is_expired":<true|false|null>}`;
 
   try {
     const response = await ai.models.generateContent({
@@ -182,6 +194,11 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     if (!jsonStr) throw new Error(`No JSON found in: ${raw.slice(0, 150)}`);
     const parsed = JSON.parse(jsonStr);
 
+    if (parsed.is_valid_document === false) {
+      result.warnings.push("not_a_carte_grise_document");
+      return result;
+    }
+
     result.expiryDate = parsed.expiry_date ?? null;
     if (result.expiryDate) {
       result.expired = isDateExpired(result.expiryDate);
@@ -190,6 +207,7 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     }
 
     if (result.expired === true) result.warnings.push("Carte grise expired");
+    if (result.expiryDate === null && result.expired === null) result.warnings.push("no_data_extracted");
   } catch (err) {
     console.error("AI carte grise verification error:", err);
   }
@@ -212,12 +230,14 @@ export async function verifyLicenseFront(params: {
 
   const prompt = `You are a document verification AI for Moroccan driving licenses (Permis de conduire).
 
-Examine the FRONT of this Moroccan driving license and extract the CIN number (Carte d'Identité Nationale number).
+First, determine if this image is actually the FRONT of a Moroccan driving license. Set "is_valid_document" to false if the image is clearly not a driving license front (e.g. it is a random photo, selfie, landscape, or unrelated document).
+
+If it IS a driving license front, extract the CIN number (Carte d'Identité Nationale number).
 The CIN number format is: 1-2 uppercase letters followed by 5-7 digits (e.g. AB123456, A123456).
 It may be labeled "C.I.N", "CIN", "N° CIN", or similar on the license.
 
 Respond with ONLY a raw JSON object, no markdown, no explanation:
-{"cin_number":"<extracted or null>"}`;
+{"is_valid_document":<true|false>,"cin_number":"<extracted or null>"}`;
 
   try {
     const response = await ai.models.generateContent({
@@ -234,6 +254,11 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     if (!jsonStr) throw new Error(`No JSON found in: ${raw.slice(0, 150)}`);
     const parsed = JSON.parse(jsonStr);
 
+    if (parsed.is_valid_document === false) {
+      result.warnings.push("not_a_license_document");
+      return result;
+    }
+
     result.cinNumberExtracted = parsed.cin_number ?? null;
 
     if (result.cinNumberExtracted && cinNumberFromCard) {
@@ -241,6 +266,7 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     }
 
     if (result.cinNumberMatch === false) result.warnings.push("License CIN mismatch");
+    if (result.cinNumberExtracted === null) result.warnings.push("no_data_extracted");
   } catch (err) {
     console.error("AI license front verification error:", err);
   }
@@ -266,12 +292,14 @@ export async function verifyLicenseBack(params: {
 
 Today's date: ${today}
 
-Examine the BACK of this Moroccan driving license and extract the expiry date.
+First, determine if this image is actually the BACK of a Moroccan driving license. Set "is_valid_document" to false if the image is clearly not a driving license back (e.g. it is a random photo, selfie, landscape, or unrelated document).
+
+If it IS a driving license back, extract the expiry date.
 Look for "Date d'expiration", "Valable jusqu'au", "Expire le", or similar label.
 The date format is DD/MM/YYYY.
 
 Respond with ONLY a raw JSON object, no markdown, no explanation:
-{"expiry_date":"<DD/MM/YYYY or null>","is_expired":<true|false|null>}`;
+{"is_valid_document":<true|false>,"expiry_date":"<DD/MM/YYYY or null>","is_expired":<true|false|null>}`;
 
   try {
     const response = await ai.models.generateContent({
@@ -288,6 +316,11 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     if (!jsonStr) throw new Error(`No JSON found in: ${raw.slice(0, 150)}`);
     const parsed = JSON.parse(jsonStr);
 
+    if (parsed.is_valid_document === false) {
+      result.warnings.push("not_a_license_document");
+      return result;
+    }
+
     result.expiryDate = parsed.expiry_date ?? null;
 
     if (result.expiryDate) {
@@ -297,6 +330,7 @@ Respond with ONLY a raw JSON object, no markdown, no explanation:
     }
 
     if (result.expired === true) result.warnings.push("License expired");
+    if (result.expiryDate === null && result.expired === null) result.warnings.push("no_data_extracted");
   } catch (err) {
     console.error("AI license back verification error:", err);
   }

@@ -274,6 +274,18 @@ export default function DriverRegistrationScreen() {
         dateOfBirth: result.dateOfBirth ?? null,
       });
 
+      const warnings: string[] = result.warnings ?? [];
+
+      if (warnings.includes("not_a_cin_document") || warnings.includes("no_data_extracted")) {
+        setCinCheckStatus("mismatch");
+        setCinCheckDetail({
+          fr: "❌ Cette image ne ressemble pas à une CIN marocaine valide. Veuillez importer une photo claire de votre carte d'identité nationale (recto).",
+          ar: "❌ هذه الصورة لا تبدو بطاقة CIN مغربية صالحة. يرجى رفع صورة واضحة لوجه بطاقة الهوية الوطنية.",
+        });
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        return;
+      }
+
       const isMismatch = result.cinNumberMatch === false;
       const isExpired = result.expired === true;
       const isUnderage = result.underAge === true;
@@ -340,8 +352,17 @@ export default function DriverRegistrationScreen() {
       if (!response.ok) throw new Error("Server error");
       const data = await response.json();
       const result = data.result;
+      const warnings: string[] = result.warnings ?? [];
       setLicenseFrontExtracted({ number: result.cinNumberExtracted ?? null });
-      if (result.cinNumberMatch === false) {
+
+      if (warnings.includes("not_a_license_document") || warnings.includes("no_data_extracted")) {
+        setLicenseFrontStatus("mismatch");
+        setLicenseFrontDetail({
+          fr: "❌ Cette image ne ressemble pas au recto d'un permis de conduire marocain. Veuillez importer une photo claire du recto de votre permis.",
+          ar: "❌ هذه الصورة لا تبدو الوجه الأمامي لرخصة قيادة مغربية. يرجى رفع صورة واضحة للوجه الأمامي لرخصتك.",
+        });
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      } else if (result.cinNumberMatch === false) {
         setLicenseFrontStatus("mismatch");
         setLicenseFrontDetail({
           fr: `❌ Le numéro CIN sur le permis (${result.cinNumberExtracted ?? "?"}) ne correspond pas à la carte CIN (${cinFromCard}).`,
@@ -379,8 +400,17 @@ export default function DriverRegistrationScreen() {
       if (!response.ok) throw new Error("Server error");
       const data = await response.json();
       const result = data.result;
+      const warnings: string[] = result.warnings ?? [];
       setCarteGriseExtracted({ expiryDate: result.expiryDate ?? null });
-      if (result.expired === true) {
+
+      if (warnings.includes("not_a_carte_grise_document") || warnings.includes("no_data_extracted")) {
+        setCarteGriseStatus("error");
+        setCarteGriseDetail({
+          fr: "❌ Cette image ne ressemble pas à une carte grise marocaine. Veuillez importer une photo claire du recto de votre carte grise.",
+          ar: "❌ هذه الصورة لا تبدو وثيقة سيارة مغربية. يرجى رفع صورة واضحة للوجه الأمامي لوثيقة سيارتك.",
+        });
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      } else if (result.expired === true) {
         setCarteGriseStatus("expired");
         setCarteGriseDetail({
           fr: `⚠️ Carte grise expirée${result.expiryDate ? ` le ${result.expiryDate}` : ""}. Pensez à la renouveler.`,
@@ -418,8 +448,17 @@ export default function DriverRegistrationScreen() {
       if (!response.ok) throw new Error("Server error");
       const data = await response.json();
       const result = data.result;
+      const warnings: string[] = result.warnings ?? [];
       setLicenseBackExtracted({ expiryDate: result.expiryDate ?? null });
-      if (result.expired === true) {
+
+      if (warnings.includes("not_a_license_document") || warnings.includes("no_data_extracted")) {
+        setLicenseBackStatus("error");
+        setLicenseBackDetail({
+          fr: "❌ Cette image ne ressemble pas au verso d'un permis de conduire marocain. Veuillez importer une photo claire du verso de votre permis.",
+          ar: "❌ هذه الصورة لا تبدو الوجه الخلفي لرخصة قيادة مغربية. يرجى رفع صورة واضحة للوجه الخلفي لرخصتك.",
+        });
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      } else if (result.expired === true) {
         setLicenseBackStatus("expired");
         setLicenseBackDetail({
           fr: `⚠️ Permis expiré${result.expiryDate ? ` le ${result.expiryDate}` : ""}. Pensez à le renouveler.`,
