@@ -2759,7 +2759,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.status(503).json({ error: "Voice call feature not configured" });
   });
 
-  const aiDevBypass = process.env.NODE_ENV === "development" && !process.env.AI_INTEGRATIONS_GEMINI_BASE_URL;
+  const aiDevBypass = process.env.NODE_ENV === "development"
+    && !process.env.AI_INTEGRATIONS_GEMINI_BASE_URL
+    && !process.env.AI_INTEGRATIONS_GEMINI_API_KEY
+    && !process.env.GOOGLE_AI_API_KEY;
 
   app.post("/api/ai/verify-cin", async (req, res) => {
     try {
