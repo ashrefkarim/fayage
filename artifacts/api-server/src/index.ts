@@ -1,5 +1,6 @@
+import "dotenv/config";
 import app from "./app";
-import { logger } from "./lib/logger";
+import { registerRoutes } from "./fayage-routes";
 
 const rawPort = process.env["PORT"];
 
@@ -15,11 +16,8 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-app.listen(port, (err) => {
-  if (err) {
-    logger.error({ err }, "Error listening on port");
-    process.exit(1);
-  }
+const server = await registerRoutes(app);
 
-  logger.info({ port }, "Server listening");
+server.listen(port, "0.0.0.0", () => {
+  console.log(`Server listening on port ${port}`);
 });
