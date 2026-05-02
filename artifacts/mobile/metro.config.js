@@ -10,4 +10,9 @@ config.resolver.blockList = [
   /nodemailer_tmp/,
 ];
 
+config.resolver.extraNodeModules = {
+  ...config.resolver.extraNodeModules,
+  buffer: path.resolve(__dirname, "../../node_modules/.pnpm/buffer@6.0.3/node_modules/buffer"),
+};
+
 module.exports = config;
