@@ -7,10 +7,7 @@ import { verifyCINDocuments, verifyLicenseFront, verifyLicenseBack, verifyCarteG
 import * as notifications from "./notifications";
 import * as fs from "fs";
 import * as path from "path";
-import { createRequire } from "node:module";
 import bcrypt from "bcryptjs";
-const _require = createRequire(import.meta.url);
-const { RtcTokenBuilder, RtcRole } = _require("agora-token");
 
 interface LocationUpdate {
   userId: string;
@@ -2757,34 +2754,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // ── Agora voice call token endpoint ──────────────────────────────────────
+  // ── Voice call token endpoint (Agora removed) ─────────────────────────────
   app.post("/api/agora/token", async (req, res) => {
-    try {
-      const { channelName, uid = 0 } = req.body;
-      if (!channelName) {
-        return res.status(400).json({ error: "channelName is required" });
-      }
-      const appId = process.env.AGORA_APP_ID;
-      const appCertificate = process.env.AGORA_APP_CERTIFICATE;
-      if (!appId || !appCertificate) {
-        return res.status(500).json({ error: "Agora credentials not configured" });
-      }
-      const tokenExpiry = 3600; // 1 hour
-      const privilegeExpiry = 3600;
-      const token = RtcTokenBuilder.buildTokenWithUid(
-        appId,
-        appCertificate,
-        channelName,
-        uid,
-        RtcRole.PUBLISHER,
-        tokenExpiry,
-        privilegeExpiry
-      );
-      return res.json({ success: true, token, appId, channelName });
-    } catch (error) {
-      console.error("Agora token error:", error);
-      return res.status(500).json({ error: "Failed to generate token" });
-    }
+    return res.status(503).json({ error: "Voice call feature not configured" });
   });
 
   const aiDevBypass = process.env.NODE_ENV === "development" && !process.env.AI_INTEGRATIONS_GEMINI_BASE_URL;

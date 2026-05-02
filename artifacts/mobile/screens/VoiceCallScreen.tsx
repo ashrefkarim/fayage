@@ -12,129 +12,38 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
 import { Icon } from "@/components/Icon";
-import { useTheme } from "@/hooks/useTheme";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { getApiUrl } from "@/lib/query-client";
-import { Spacing, BorderRadius } from "@/constants/theme";
+import { Spacing } from "@/constants/theme";
 
 type RouteParams = RouteProp<RootStackParamList, "VoiceCall">;
-
-const APP_ID = process.env.EXPO_PUBLIC_AGORA_APP_ID || "";
-
-function getAgoraEngine() {
-  try {
-    const agora = require("react-native-agora");
-    return agora;
-  } catch {
-    return null;
-  }
-}
 
 export default function VoiceCallScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute<RouteParams>();
-  const { theme } = useTheme();
   const { t } = useLanguage();
   const { user } = useAuth();
 
   const { channelName, token, callerName, callerId, requestId, isIncoming } =
     route.params;
 
-  const engineRef = useRef<any>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   const [callStatus, setCallStatus] = useState<
     "connecting" | "ringing" | "active" | "ended"
   >(isIncoming ? "ringing" : "connecting");
   const [isMuted, setIsMuted] = useState(false);
-  const [isSpeaker, setIsSpeaker] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const appStateRef = useRef(AppState.currentState);
 
   const endCallAndGoBack = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-    try {
-      engineRef.current?.leaveChannel();
-    } catch {}
-    try {
-      engineRef.current?.release();
-    } catch {}
-    engineRef.current = null;
-    try {
-      wsRef.current?.close();
-    } catch {}
+    try { wsRef.current?.close(); } catch {}
     if (navigation.canGoBack()) navigation.goBack();
   }, [navigation]);
-
-  const initEngine = useCallback(async () => {
-    if (!APP_ID) {
-      console.error("Agora APP_ID not set");
-      endCallAndGoBack();
-      return;
-    }
-
-    const agora = getAgoraEngine();
-    if (!agora) {
-      console.error("react-native-agora not available (Expo Go)");
-      endCallAndGoBack();
-      return;
-    }
-
-    let engine: any;
-    try {
-      engine = agora.createAgoraRtcEngine();
-    } catch (e) {
-      console.error("Failed to create Agora engine:", e);
-      endCallAndGoBack();
-      return;
-    }
-    engineRef.current = engine;
-
-    try {
-      engine.initialize({
-        appId: APP_ID,
-        channelProfile:
-          agora.ChannelProfileType.ChannelProfileCommunication,
-        audioScenario: agora.AudioScenarioType.AudioScenarioChatRoom,
-      });
-      engine.enableAudio();
-      engine.setDefaultAudioRouteToSpeakerphone(false);
-
-      engine.registerEventHandler({
-        onJoinChannelSuccess: () => {
-          if (!isIncoming) setCallStatus("ringing");
-        },
-        onUserJoined: () => {
-          setCallStatus("active");
-          timerRef.current = setInterval(() => {
-            setCallDuration((d) => d + 1);
-          }, 1000);
-          Haptics.notificationAsync(
-            Haptics.NotificationFeedbackType.Success
-          );
-        },
-        onUserOffline: () => {
-          endCallAndGoBack();
-        },
-        onError: (err: any, msg: string) => {
-          console.error("Agora error:", err, msg);
-        },
-      });
-
-      await engine.joinChannel(token, channelName, 0, {
-        clientRoleType: agora.ClientRoleType.ClientRoleBroadcaster,
-        autoSubscribeAudio: true,
-        publishMicrophoneTrack: true,
-      });
-    } catch (e) {
-      console.error("Agora engine setup error:", e);
-      endCallAndGoBack();
-    }
-  }, [token, channelName, isIncoming, endCallAndGoBack]);
 
   const connectSignaling = useCallback(() => {
     try {
@@ -154,27 +63,25 @@ export default function VoiceCallScreen() {
             })
           );
         }
+        if (!isIncoming) {
+          setCallStatus("ringing");
+        }
       };
 
       ws.onmessage = (e) => {
         try {
           const data = JSON.parse(e.data);
-          if (
-            data.type === "CALL_ACCEPTED" &&
-            data.channelName === channelName
-          ) {
+          if (data.type === "CALL_ACCEPTED" && data.channelName === channelName) {
             setCallStatus("active");
+            timerRef.current = setInterval(() => {
+              setCallDuration((d) => d + 1);
+            }, 1000);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           }
-          if (
-            data.type === "CALL_ENDED" &&
-            data.channelName === channelName
-          ) {
+          if (data.type === "CALL_ENDED" && data.channelName === channelName) {
             endCallAndGoBack();
           }
-          if (
-            data.type === "CALL_REJECTED" &&
-            data.channelName === channelName
-          ) {
+          if (data.type === "CALL_REJECTED" && data.channelName === channelName) {
             endCallAndGoBack();
           }
         } catch {}
@@ -182,62 +89,32 @@ export default function VoiceCallScreen() {
 
       ws.onerror = () => {};
       ws.onclose = () => {};
-    } catch (e) {
-      console.error("WS signaling error:", e);
-    }
-  }, [user, channelName, endCallAndGoBack]);
+    } catch (e) {}
+  }, [user, channelName, isIncoming, endCallAndGoBack]);
 
   useEffect(() => {
     connectSignaling();
-    if (!isIncoming) {
-      initEngine();
-    }
-    const sub = AppState.addEventListener(
-      "change",
-      (nextState: AppStateStatus) => {
-        appStateRef.current = nextState;
-      }
-    );
+    const sub = AppState.addEventListener("change", (_: AppStateStatus) => {});
     return () => {
       sub.remove();
       if (timerRef.current) clearInterval(timerRef.current);
-      try {
-        engineRef.current?.leaveChannel();
-      } catch {}
-      try {
-        engineRef.current?.release();
-      } catch {}
-      try {
-        wsRef.current?.close();
-      } catch {}
+      try { wsRef.current?.close(); } catch {}
     };
   }, []);
 
   const handleAccept = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     wsRef.current?.send(
-      JSON.stringify({
-        type: "CALL_ACCEPTED",
-        channelName,
-        callerId,
-        calleeId: user?.id,
-        requestId,
-      })
+      JSON.stringify({ type: "CALL_ACCEPTED", channelName, callerId, calleeId: user?.id, requestId })
     );
-    setCallStatus("connecting");
-    await initEngine();
-  }, [channelName, callerId, user?.id, requestId, initEngine]);
+    setCallStatus("active");
+    timerRef.current = setInterval(() => setCallDuration((d) => d + 1), 1000);
+  }, [channelName, callerId, user?.id, requestId]);
 
   const handleDecline = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     wsRef.current?.send(
-      JSON.stringify({
-        type: "CALL_REJECTED",
-        channelName,
-        callerId,
-        calleeId: user?.id,
-        requestId,
-      })
+      JSON.stringify({ type: "CALL_REJECTED", channelName, callerId, calleeId: user?.id, requestId })
     );
     endCallAndGoBack();
   }, [channelName, callerId, user?.id, requestId, endCallAndGoBack]);
@@ -245,33 +122,15 @@ export default function VoiceCallScreen() {
   const handleEndCall = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     wsRef.current?.send(
-      JSON.stringify({
-        type: "CALL_ENDED",
-        channelName,
-        callerId: user?.id,
-        requestId,
-      })
+      JSON.stringify({ type: "CALL_ENDED", channelName, callerId: user?.id, requestId })
     );
     endCallAndGoBack();
   }, [channelName, user?.id, requestId, endCallAndGoBack]);
 
   const handleToggleMute = useCallback(async () => {
-    const newMuted = !isMuted;
-    setIsMuted(newMuted);
-    try {
-      engineRef.current?.muteLocalAudioStream(newMuted);
-    } catch {}
+    setIsMuted((m) => !m);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, [isMuted]);
-
-  const handleToggleSpeaker = useCallback(async () => {
-    const newSpeaker = !isSpeaker;
-    setIsSpeaker(newSpeaker);
-    try {
-      engineRef.current?.setEnableSpeakerphone(newSpeaker);
-    } catch {}
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, [isSpeaker]);
+  }, []);
 
   const formatDuration = (secs: number) => {
     const m = Math.floor(secs / 60).toString().padStart(2, "0");
@@ -281,33 +140,21 @@ export default function VoiceCallScreen() {
 
   const statusLabel = () => {
     switch (callStatus) {
-      case "connecting":
-        return t("callConnecting");
-      case "ringing":
-        return isIncoming ? t("callIncoming") : t("callRinging");
-      case "active":
-        return formatDuration(callDuration);
-      case "ended":
-        return t("callEnded");
+      case "connecting": return t("callConnecting");
+      case "ringing": return isIncoming ? t("callIncoming") : t("callRinging");
+      case "active": return formatDuration(callDuration);
+      case "ended": return t("callEnded");
     }
   };
 
   return (
     <LinearGradient
       colors={["#0066CC", "#004499", "#002266"]}
-      style={[
-        styles.container,
-        { paddingTop: insets.top, paddingBottom: insets.bottom },
-      ]}
+      style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
     >
       <View style={styles.callerSection}>
         <View style={styles.avatarRing}>
-          <View
-            style={[
-              styles.avatar,
-              { backgroundColor: "rgba(255,255,255,0.15)" },
-            ]}
-          >
+          <View style={[styles.avatar, { backgroundColor: "rgba(255,255,255,0.15)" }]}>
             <ThemedText style={styles.avatarInitials}>
               {callerName ? callerName.charAt(0).toUpperCase() : "?"}
             </ThemedText>
@@ -320,19 +167,13 @@ export default function VoiceCallScreen() {
       {callStatus === "ringing" && isIncoming ? (
         <View style={styles.incomingActions}>
           <View style={styles.incomingActionItem}>
-            <Pressable
-              onPress={handleDecline}
-              style={[styles.incomingBtn, styles.declineBtn]}
-            >
+            <Pressable onPress={handleDecline} style={[styles.incomingBtn, styles.declineBtn]}>
               <Icon name="phone-off" size={28} color="#FFFFFF" />
             </Pressable>
             <ThemedText style={styles.actionLabel}>{t("decline")}</ThemedText>
           </View>
           <View style={styles.incomingActionItem}>
-            <Pressable
-              onPress={handleAccept}
-              style={[styles.incomingBtn, styles.acceptBtn]}
-            >
+            <Pressable onPress={handleAccept} style={[styles.incomingBtn, styles.acceptBtn]}>
               <Icon name="phone-call" size={28} color="#FFFFFF" />
             </Pressable>
             <ThemedText style={styles.actionLabel}>{t("accept")}</ThemedText>
@@ -344,59 +185,25 @@ export default function VoiceCallScreen() {
             <View style={styles.controlItem}>
               <Pressable
                 onPress={handleToggleMute}
-                style={[
-                  styles.controlBtn,
-                  {
-                    backgroundColor: isMuted
-                      ? "rgba(255,255,255,0.35)"
-                      : "rgba(255,255,255,0.12)",
-                  },
-                ]}
+                style={[styles.controlBtn, { backgroundColor: isMuted ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.12)" }]}
               >
-                <Icon
-                  name={isMuted ? "mic-off" : "mic"}
-                  size={26}
-                  color="#FFFFFF"
-                />
+                <Icon name={isMuted ? "mic-off" : "mic"} size={26} color="#FFFFFF" />
               </Pressable>
-              <ThemedText style={styles.controlLabel}>
-                {isMuted ? t("unmute") : t("mute")}
-              </ThemedText>
+              <ThemedText style={styles.controlLabel}>{isMuted ? t("unmute") : t("mute")}</ThemedText>
             </View>
 
             <View style={styles.controlItem}>
-              <Pressable
-                onPress={handleEndCall}
-                style={[styles.controlBtn, styles.endBtn]}
-              >
+              <Pressable onPress={handleEndCall} style={[styles.controlBtn, styles.endBtn]}>
                 <Icon name="phone-off" size={28} color="#FFFFFF" />
               </Pressable>
-              <ThemedText style={styles.controlLabel}>
-                {t("endCall")}
-              </ThemedText>
+              <ThemedText style={styles.controlLabel}>{t("endCall")}</ThemedText>
             </View>
 
             <View style={styles.controlItem}>
-              <Pressable
-                onPress={handleToggleSpeaker}
-                style={[
-                  styles.controlBtn,
-                  {
-                    backgroundColor: isSpeaker
-                      ? "rgba(255,255,255,0.35)"
-                      : "rgba(255,255,255,0.12)",
-                  },
-                ]}
-              >
-                <Icon
-                  name={isSpeaker ? "volume-2" : "volume-x"}
-                  size={26}
-                  color="#FFFFFF"
-                />
+              <Pressable style={[styles.controlBtn, { backgroundColor: "rgba(255,255,255,0.12)", opacity: 0.4 }]}>
+                <Icon name="volume-2" size={26} color="#FFFFFF" />
               </Pressable>
-              <ThemedText style={styles.controlLabel}>
-                {isSpeaker ? t("earpiece") : t("speaker")}
-              </ThemedText>
+              <ThemedText style={styles.controlLabel}>{t("speaker")}</ThemedText>
             </View>
           </View>
         </View>
@@ -406,105 +213,23 @@ export default function VoiceCallScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "space-between",
-    paddingHorizontal: Spacing.xl,
-  },
-  callerSection: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: Spacing.md,
-  },
-  avatarRing: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 3,
-    borderColor: "rgba(255,255,255,0.25)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: Spacing.sm,
-  },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarInitials: {
-    color: "#FFFFFF",
-    fontSize: 48,
-    fontWeight: "800",
-  },
-  callerName: {
-    color: "#FFFFFF",
-    fontSize: 28,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  callStatus: {
-    color: "rgba(255,255,255,0.75)",
-    fontSize: 16,
-    textAlign: "center",
-  },
-  incomingActions: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingBottom: Spacing["3xl"],
-  },
-  incomingActionItem: {
-    alignItems: "center",
-    gap: Spacing.sm,
-  },
-  incomingBtn: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  acceptBtn: {
-    backgroundColor: "#16A34A",
-  },
-  declineBtn: {
-    backgroundColor: "#DC2626",
-  },
-  actionLabel: {
-    color: "rgba(255,255,255,0.8)",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  activeControls: {
-    paddingBottom: Spacing["3xl"],
-  },
-  controlsRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  controlItem: {
-    alignItems: "center",
-    gap: Spacing.sm,
-  },
-  controlBtn: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  endBtn: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "#DC2626",
-  },
-  controlLabel: {
-    color: "rgba(255,255,255,0.8)",
-    fontSize: 12,
-    fontWeight: "600",
-  },
+  container: { flex: 1, justifyContent: "space-between", paddingHorizontal: Spacing.xl },
+  callerSection: { flex: 1, alignItems: "center", justifyContent: "center", gap: Spacing.md },
+  avatarRing: { width: 140, height: 140, borderRadius: 70, borderWidth: 3, borderColor: "rgba(255,255,255,0.25)", alignItems: "center", justifyContent: "center", marginBottom: Spacing.sm },
+  avatar: { width: 120, height: 120, borderRadius: 60, alignItems: "center", justifyContent: "center" },
+  avatarInitials: { color: "#FFFFFF", fontSize: 48, fontWeight: "800" },
+  callerName: { color: "#FFFFFF", fontSize: 28, fontWeight: "700", textAlign: "center" },
+  callStatus: { color: "rgba(255,255,255,0.75)", fontSize: 16, textAlign: "center" },
+  incomingActions: { flexDirection: "row", justifyContent: "space-around", paddingBottom: Spacing["3xl"] },
+  incomingActionItem: { alignItems: "center", gap: Spacing.sm },
+  incomingBtn: { width: 72, height: 72, borderRadius: 36, alignItems: "center", justifyContent: "center" },
+  acceptBtn: { backgroundColor: "#16A34A" },
+  declineBtn: { backgroundColor: "#DC2626" },
+  actionLabel: { color: "rgba(255,255,255,0.8)", fontSize: 14, fontWeight: "600" },
+  activeControls: { paddingBottom: Spacing["3xl"] },
+  controlsRow: { flexDirection: "row", justifyContent: "space-around", alignItems: "center" },
+  controlItem: { alignItems: "center", gap: Spacing.sm },
+  controlBtn: { width: 64, height: 64, borderRadius: 32, alignItems: "center", justifyContent: "center" },
+  endBtn: { width: 72, height: 72, borderRadius: 36, backgroundColor: "#DC2626" },
+  controlLabel: { color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: "600" },
 });

@@ -68,8 +68,5 @@
     "zod": "catalog:",
     "zod-validation-error": "^3.4.0"
   },
-  "dependencies": {
-    "agora-rtc-sdk-ng": "^4.24.2",
-    "react-native-agora": "^4.6.2"
-  }
+  "dependencies": {}
 }
