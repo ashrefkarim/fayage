@@ -3,20 +3,20 @@ import nodemailer from 'nodemailer';
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
 export async function sendPasswordResetEmail(toEmail: string, code: string): Promise<boolean> {
   try {
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error('Gmail credentials not configured');
       return false;
     }
 
     const result = await transporter.sendMail({
-      from: `FAYAGE <${process.env.GMAIL_USER}>`,
+      from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Réinitialisation du mot de passe FAYAGE / إعادة تعيين كلمة المرور',
       html: `
@@ -56,13 +56,13 @@ export async function sendPasswordResetEmail(toEmail: string, code: string): Pro
 
 export async function sendClientWelcomeEmail(toEmail: string, fullName: string): Promise<boolean> {
   try {
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error('Gmail credentials not configured');
       return false;
     }
 
     const result = await transporter.sendMail({
-      from: `FAYAGE <${process.env.GMAIL_USER}>`,
+      from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Bienvenue sur FAYAGE! / مرحبًا بك في FAYAGE!',
       html: `
@@ -113,13 +113,13 @@ export async function sendClientWelcomeEmail(toEmail: string, fullName: string):
 
 export async function sendDriverWelcomeEmail(toEmail: string, fullName: string): Promise<boolean> {
   try {
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error('Gmail credentials not configured');
       return false;
     }
 
     const result = await transporter.sendMail({
-      from: `FAYAGE <${process.env.GMAIL_USER}>`,
+      from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Bienvenue Chauffeur FAYAGE! / مرحبًا بك سائق FAYAGE!',
       html: `
@@ -172,13 +172,13 @@ export async function sendDriverWelcomeEmail(toEmail: string, fullName: string):
 
 export async function sendDriverApprovalEmail(toEmail: string, fullName: string): Promise<boolean> {
   try {
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error('Gmail credentials not configured');
       return false;
     }
 
     const result = await transporter.sendMail({
-      from: `FAYAGE <${process.env.GMAIL_USER}>`,
+      from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Compte Vérifié - Bienvenue chez FAYAGE! / تم التحقق من الحساب!',
       html: `
@@ -231,7 +231,7 @@ export async function sendDriverApprovalEmail(toEmail: string, fullName: string)
 
 export async function sendDriverRejectionEmail(toEmail: string, fullName: string, reason?: string): Promise<boolean> {
   try {
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error('Gmail credentials not configured');
       return false;
     }
@@ -239,7 +239,7 @@ export async function sendDriverRejectionEmail(toEmail: string, fullName: string
     const reasonText = reason || "Documents incomplets ou non conformes / وثائق غير مكتملة أو غير مطابقة";
 
     const result = await transporter.sendMail({
-      from: `FAYAGE <${process.env.GMAIL_USER}>`,
+      from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Vérification Non Approuvée - FAYAGE / التحقق غير موافق عليه',
       html: `
@@ -292,13 +292,13 @@ export async function sendDriverRejectionEmail(toEmail: string, fullName: string
 
 export async function sendVerificationEmail(toEmail: string, code: string): Promise<boolean> {
   try {
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error('Gmail credentials not configured');
       return false;
     }
 
     const result = await transporter.sendMail({
-      from: `FAYAGE <${process.env.GMAIL_USER}>`,
+      from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Code de vérification FAYAGE / رمز التحقق',
       html: `
