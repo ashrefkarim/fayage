@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-const FROM_ADDRESS = process.env.EMAIL_FROM || 'FAYAGE <noreply@fayage.ma>';
+const FROM_ADDRESS = process.env.EMAIL_FROM || 'FAYAGE <noreply@rustbois.com>';
 
 async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
   if (!process.env.RESEND_API_KEY) {
