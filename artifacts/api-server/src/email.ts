@@ -1,31 +1,20 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-function getTransporter() {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.GMAIL_USER || process.env.EMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS,
-    },
-    connectionTimeout: 10000,
-    socketTimeout: 10000,
-  });
-}
-
-const FROM_USER = () => process.env.GMAIL_USER || process.env.EMAIL_USER || '';
+const FROM = process.env.EMAIL_FROM || 'FAYAGE <onboarding@resend.dev>';
 
 async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
-  const user = process.env.GMAIL_USER || process.env.EMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
-  if (!user || !pass) {
-    console.error('Email credentials not configured');
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error('RESEND_API_KEY not configured — skipping email');
     return false;
   }
   try {
-    const transporter = getTransporter();
-    await transporter.sendMail({ from: `FAYAGE <${FROM_USER()}>`, to, subject, html });
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
+    if (error) {
+      console.error('Resend error:', error);
+      return false;
+    }
     return true;
   } catch (err) {
     console.error('Failed to send email:', err);
