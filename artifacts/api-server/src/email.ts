@@ -6,7 +6,19 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  connectionTimeout: 8000,
+  greetingTimeout: 8000,
+  socketTimeout: 8000,
 });
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Email timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+}
 
 export async function sendPasswordResetEmail(toEmail: string, code: string): Promise<boolean> {
   try {
@@ -15,7 +27,7 @@ export async function sendPasswordResetEmail(toEmail: string, code: string): Pro
       return false;
     }
 
-    const result = await transporter.sendMail({
+    const result = await withTimeout(transporter.sendMail({
       from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Réinitialisation du mot de passe FAYAGE / إعادة تعيين كلمة المرور',
@@ -44,7 +56,7 @@ export async function sendPasswordResetEmail(toEmail: string, code: string): Pro
           </div>
         </div>
       `
-    });
+    }), 10000);
     
     console.log('Password reset email sent:', result.messageId);
     return true;
@@ -61,7 +73,7 @@ export async function sendClientWelcomeEmail(toEmail: string, fullName: string):
       return false;
     }
 
-    const result = await transporter.sendMail({
+    const result = await withTimeout(transporter.sendMail({
       from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Bienvenue sur FAYAGE! / مرحبًا بك في FAYAGE!',
@@ -101,7 +113,7 @@ export async function sendClientWelcomeEmail(toEmail: string, fullName: string):
           </div>
         </div>
       `
-    });
+    }), 10000);
     
     console.log('Client welcome email sent:', result.messageId);
     return true;
@@ -118,7 +130,7 @@ export async function sendDriverWelcomeEmail(toEmail: string, fullName: string):
       return false;
     }
 
-    const result = await transporter.sendMail({
+    const result = await withTimeout(transporter.sendMail({
       from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Bienvenue Chauffeur FAYAGE! / مرحبًا بك سائق FAYAGE!',
@@ -160,7 +172,7 @@ export async function sendDriverWelcomeEmail(toEmail: string, fullName: string):
           </div>
         </div>
       `
-    });
+    }), 10000);
     
     console.log('Driver welcome email sent:', result.messageId);
     return true;
@@ -177,7 +189,7 @@ export async function sendDriverApprovalEmail(toEmail: string, fullName: string)
       return false;
     }
 
-    const result = await transporter.sendMail({
+    const result = await withTimeout(transporter.sendMail({
       from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Compte Vérifié - Bienvenue chez FAYAGE! / تم التحقق من الحساب!',
@@ -219,7 +231,7 @@ export async function sendDriverApprovalEmail(toEmail: string, fullName: string)
           </div>
         </div>
       `
-    });
+    }), 10000);
     
     console.log('Driver approval email sent:', result.messageId);
     return true;
@@ -238,7 +250,7 @@ export async function sendDriverRejectionEmail(toEmail: string, fullName: string
 
     const reasonText = reason || "Documents incomplets ou non conformes / وثائق غير مكتملة أو غير مطابقة";
 
-    const result = await transporter.sendMail({
+    const result = await withTimeout(transporter.sendMail({
       from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Vérification Non Approuvée - FAYAGE / التحقق غير موافق عليه',
@@ -280,7 +292,7 @@ export async function sendDriverRejectionEmail(toEmail: string, fullName: string
           </div>
         </div>
       `
-    });
+    }), 10000);
     
     console.log('Driver rejection email sent:', result.messageId);
     return true;
@@ -297,7 +309,7 @@ export async function sendVerificationEmail(toEmail: string, code: string): Prom
       return false;
     }
 
-    const result = await transporter.sendMail({
+    const result = await withTimeout(transporter.sendMail({
       from: `FAYAGE <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Code de vérification FAYAGE / رمز التحقق',
@@ -322,7 +334,7 @@ export async function sendVerificationEmail(toEmail: string, code: string): Prom
           </div>
         </div>
       `
-    });
+    }), 10000);
     
     console.log('Email sent:', result.messageId);
     return true;
