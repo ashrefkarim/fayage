@@ -1,20 +1,31 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const FROM = process.env.EMAIL_FROM || 'FAYAGE <onboarding@resend.dev>';
+function getTransporter() {
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.GMAIL_USER || process.env.EMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS,
+    },
+    connectionTimeout: 10000,
+    socketTimeout: 10000,
+  });
+}
+
+const FROM_USER = () => process.env.GMAIL_USER || process.env.EMAIL_USER || '';
 
 async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.error('RESEND_API_KEY not configured — skipping email');
+  const user = process.env.GMAIL_USER || process.env.EMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
+  if (!user || !pass) {
+    console.error('Email credentials not configured');
     return false;
   }
   try {
-    const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
-    if (error) {
-      console.error('Resend error:', error);
-      return false;
-    }
+    const transporter = getTransporter();
+    await transporter.sendMail({ from: `FAYAGE <${FROM_USER()}>`, to, subject, html });
     return true;
   } catch (err) {
     console.error('Failed to send email:', err);
@@ -75,7 +86,7 @@ export async function sendClientWelcomeEmail(toEmail: string, fullName: string):
       </div>
       <div style="padding: 30px; text-align: center;">
         <h2 style="color: #1E3A8A;">Bonjour ${fullName}!</h2>
-        <p style="color: #333; font-size: 16px;">Nous sommes ravis de vous accueillir sur FAYAGE.</p>
+        <p style="color: #333; font-size: 16px;">Nous sommes ravis de vous accueillir sur FAYAGE, votre plateforme de transport premium au Maroc.</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
         <h2 style="color: #1E3A8A; direction: rtl;">مرحبًا ${fullName}!</h2>
         <p style="color: #333; font-size: 16px; direction: rtl;">نحن سعداء بانضمامك إلى FAYAGE.</p>
@@ -96,9 +107,8 @@ export async function sendDriverWelcomeEmail(toEmail: string, fullName: string):
       </div>
       <div style="padding: 30px; text-align: center;">
         <h2 style="color: #1E3A8A;">Bonjour ${fullName}!</h2>
-        <p style="color: #333; font-size: 16px;">Bienvenue parmi nos chauffeurs partenaires FAYAGE.</p>
         <div style="background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 10px; padding: 15px; margin: 20px 0;">
-          <p style="color: #92400E; font-size: 14px; margin: 0;"><strong>Prochaine étape:</strong> Complétez votre vérification.</p>
+          <p style="color: #92400E; font-size: 14px; margin: 0;"><strong>Prochaine étape:</strong> Complétez votre vérification pour commencer à recevoir des commandes.</p>
         </div>
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
         <h2 style="color: #1E3A8A; direction: rtl;">مرحبًا ${fullName}!</h2>
