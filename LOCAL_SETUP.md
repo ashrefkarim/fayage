@@ -30,7 +30,8 @@ The `.env` file already points to the live Railway backend — no changes needed
 
 **4. Start the mobile app**
 ```bash
-pnpm --filter @workspace/mobile run dev
+cd artifacts/mobile
+npx expo start
 ```
 
 **5. Open on your phone**
