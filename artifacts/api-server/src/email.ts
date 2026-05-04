@@ -1,36 +1,17 @@
-const FROM_EMAIL = process.env.MAILJET_FROM_EMAIL || process.env.GMAIL_USER || process.env.EMAIL_USER || '';
-const FROM_NAME = 'FAYAGE';
+import { Resend } from 'resend';
+
+const FROM_ADDRESS = process.env.EMAIL_FROM || 'FAYAGE <noreply@fayage.ma>';
 
 async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
-  const apiKey = process.env.MAILJET_API_KEY;
-  const secretKey = process.env.MAILJET_SECRET_KEY;
-
-  if (!apiKey || !secretKey) {
-    console.error('MAILJET_API_KEY / MAILJET_SECRET_KEY not configured');
+  if (!process.env.RESEND_API_KEY) {
+    console.error('RESEND_API_KEY not configured');
     return false;
   }
-
   try {
-    const credentials = Buffer.from(`${apiKey}:${secretKey}`).toString('base64');
-    const response = await fetch('https://api.mailjet.com/v3.1/send', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        Messages: [{
-          From: { Email: FROM_EMAIL, Name: FROM_NAME },
-          To: [{ Email: to }],
-          Subject: subject,
-          HTMLPart: html,
-        }],
-      }),
-    });
-
-    const data = await response.json() as any;
-    if (!response.ok || data?.Messages?.[0]?.Status !== 'success') {
-      console.error('Mailjet error:', JSON.stringify(data));
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { error } = await resend.emails.send({ from: FROM_ADDRESS, to, subject, html });
+    if (error) {
+      console.error('Resend error:', error);
       return false;
     }
     return true;
@@ -147,7 +128,7 @@ export async function sendDriverApprovalEmail(toEmail: string, fullName: string)
 }
 
 export async function sendDriverRejectionEmail(toEmail: string, fullName: string, reason?: string): Promise<boolean> {
-  const reasonText = reason || "Documents incomplets ou non conformes";
+  const reasonText = reason || 'Documents incomplets ou non conformes';
   return sendEmail(toEmail, 'Vérification Non Approuvée - FAYAGE', `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #DC2626, #EF4444); padding: 30px; border-radius: 10px; text-align: center;">
