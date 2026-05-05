@@ -83,9 +83,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const count = await storage.countAdmins();
       if (count === 0) {
-        const hash = await bcrypt.hash("FAYAGE2024", 12);
+        const hash = await bcrypt.hash("FAYAGE2026", 12);
         await storage.createAdminAccount("admin", undefined, hash, true);
-        console.log("[SEED] Default admin created: username=admin password=FAYAGE2024");
+        console.log("[SEED] Default admin created: username=admin password=FAYAGE2026");
+      } else {
+        // Ensure the default admin password is up to date
+        const existing = await storage.getAdminByUsername("admin");
+        if (existing) {
+          const hash = await bcrypt.hash("FAYAGE2026", 12);
+          await storage.updateAdminPassword(existing.id, hash);
+          console.log("[SEED] Default admin password updated to FAYAGE2026");
+        }
       }
     } catch (e) {
       console.error("[SEED] Could not seed default admin:", e);
