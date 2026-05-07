@@ -97,6 +97,9 @@ export default function DriverRegistrationScreen() {
   const [isAiVerifying, setIsAiVerifying] = useState(false);
   const [aiWarnings, setAiWarnings] = useState<AiWarning[]>([]);
   const [cinCheckStatus, setCinCheckStatus] = useState<"idle" | "checking" | "passed" | "mismatch" | "expired" | "underage" | "both_failed" | "error">("idle");
+  const [licenseFrontStatus, setLicenseFrontStatus] = useState<"idle" | "checking" | "passed" | "mismatch" | "error">("idle");
+  const [licenseBackStatus, setLicenseBackStatus] = useState<"idle" | "checking" | "passed" | "expired" | "error">("idle");
+  const [carteGriseStatus, setCarteGriseStatus] = useState<"idle" | "checking" | "passed" | "expired" | "error">("idle");
 
   const makeScanLoop = (anim: Animated.Value, active: boolean) => {
     if (active) {
@@ -119,15 +122,12 @@ export default function DriverRegistrationScreen() {
   const [cinCheckDetail, setCinCheckDetail] = useState<{ fr: string; ar: string } | null>(null);
   const [cinExtracted, setCinExtracted] = useState<{ number: string | null; expiryDate: string | null; dateOfBirth: string | null } | null>(null);
 
-  const [licenseFrontStatus, setLicenseFrontStatus] = useState<"idle" | "checking" | "passed" | "mismatch" | "error">("idle");
   const [licenseFrontDetail, setLicenseFrontDetail] = useState<{ fr: string; ar: string } | null>(null);
   const [licenseFrontExtracted, setLicenseFrontExtracted] = useState<{ number: string | null } | null>(null);
 
-  const [licenseBackStatus, setLicenseBackStatus] = useState<"idle" | "checking" | "passed" | "expired" | "error">("idle");
   const [licenseBackDetail, setLicenseBackDetail] = useState<{ fr: string; ar: string } | null>(null);
   const [licenseBackExtracted, setLicenseBackExtracted] = useState<{ expiryDate: string | null } | null>(null);
 
-  const [carteGriseStatus, setCarteGriseStatus] = useState<"idle" | "checking" | "passed" | "expired" | "error">("idle");
   const [carteGriseDetail, setCarteGriseDetail] = useState<{ fr: string; ar: string } | null>(null);
   const [carteGriseExtracted, setCarteGriseExtracted] = useState<{ expiryDate: string | null } | null>(null);
 
@@ -355,8 +355,7 @@ export default function DriverRegistrationScreen() {
   const runAiVerification = async () => {};
 
   const checkLicenseFront = async (savedUri: string) => {
-    const cinFromCard = cinExtracted?.number ?? nationalId;
-    if (!cinFromCard) return;
+    const cinFromCard = cinExtracted?.number ?? nationalId ?? "";
     setLicenseFrontStatus("checking");
     setLicenseFrontDetail(null);
     setLicenseFrontExtracted(null);
