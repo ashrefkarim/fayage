@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, StyleSheet, Image, Pressable, Dimensions, Platform, Alert, Animated } from "react-native";
+import { View, StyleSheet, Image, Pressable, Dimensions, Platform, Animated } from "react-native";
+import PermissionModal from "@/components/PermissionModal";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -43,6 +44,7 @@ export default function AuthScreen() {
   const { t, isRTL, language } = useLanguage();
   const { login, signup, loginAsAdmin } = useAuth();
 
+  const [permissionModalVisible, setPermissionModalVisible] = useState(false);
   const [mode, setMode] = useState<AuthMode>("welcome");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -214,7 +216,7 @@ export default function AuthScreen() {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         if (Platform.OS !== "web") {
-          Alert.alert(t("requiredField"), "Permission to access gallery is required");
+          setPermissionModalVisible(true);
         }
         return;
       }
@@ -764,6 +766,12 @@ export default function AuthScreen() {
           </Animated.View>
         </KeyboardAwareScrollViewCompat>
       )}
+      <PermissionModal
+        visible={permissionModalVisible}
+        type="gallery"
+        language={language as "fr" | "ar"}
+        onClose={() => setPermissionModalVisible(false)}
+      />
     </View>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Alert, Image, Pressable, Platform } from "react-native";
+import { View, StyleSheet, Image, Pressable, Platform } from "react-native";
+import PermissionModal from "@/components/PermissionModal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderPadding } from "@/hooks/useHeaderPadding";
 import { useNavigation } from "@react-navigation/native";
@@ -52,13 +53,14 @@ export default function EditProfileScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [permissionModalVisible, setPermissionModalVisible] = useState(false);
 
   const pickProfilePicture = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         if (Platform.OS !== "web") {
-          Alert.alert(t("requiredField"), "Permission required");
+          setPermissionModalVisible(true);
         }
         return;
       }
@@ -373,6 +375,12 @@ export default function EditProfileScreen() {
         {editMode === "email" && renderEmailEdit()}
         {editMode === "password" && renderPasswordEdit()}
       </View>
+      <PermissionModal
+        visible={permissionModalVisible}
+        type="gallery"
+        language={language as "fr" | "ar"}
+        onClose={() => setPermissionModalVisible(false)}
+      />
     </KeyboardAwareScrollViewCompat>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, StyleSheet, Pressable, Image, ScrollView, Alert, Platform, ActivityIndicator, Animated } from "react-native";
+import { View, StyleSheet, Pressable, Image, ScrollView, Platform, ActivityIndicator, Animated } from "react-native";
+import PermissionModal, { PermissionType } from "@/components/PermissionModal";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderPadding } from "@/hooks/useHeaderPadding";
@@ -73,6 +74,7 @@ export default function DriverRegistrationScreen() {
   const [documents, setDocuments] = useState<DriverDocuments>({});
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [permissionModal, setPermissionModal] = useState<{ visible: boolean; type: PermissionType }>({ visible: false, type: "gallery" });
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -503,7 +505,7 @@ export default function DriverRegistrationScreen() {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert(t("requiredField"), "Permission to access gallery is required");
+        setPermissionModal({ visible: true, type: "gallery" });
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -540,7 +542,7 @@ export default function DriverRegistrationScreen() {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert(t("requiredField"), "Permission to access camera is required");
+        setPermissionModal({ visible: true, type: "camera" });
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
@@ -1292,6 +1294,12 @@ export default function DriverRegistrationScreen() {
         </Pressable>
       </View>
 
+      <PermissionModal
+        visible={permissionModal.visible}
+        type={permissionModal.type}
+        language={language as "fr" | "ar"}
+        onClose={() => setPermissionModal((p) => ({ ...p, visible: false }))}
+      />
     </ThemedView>
   );
 }
