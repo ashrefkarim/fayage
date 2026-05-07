@@ -1,0 +1,165 @@
+
+Politique de confidentialité – FAYAGE
+
+
+Dernière mise à jour : 24/04/2026
+
+Bienvenue sur FAYAGE, une plateforme de services logistiques, de transport et de livraison reliant clients et fournisseurs.
+
+La protection de vos données personnelles est une priorité. Cette politique explique clairement comment nous collectons, utilisons et protégeons vos informations.
+
+Les utilisateurs qui demandent des services sont appelés « Clients »,
+ceux qui les fournissent sont appelés « Fournisseurs »,
+et ensemble « Utilisateurs ».
+
+FAYAGE est responsable du traitement des données.
+
+
+1. Données collectées
+a. Données que vous fournissez
+Nom et prénom
+
+Numéro de téléphone
+
+Adresse email
+
+Adresse de collecte et livraison
+
+Informations de paiement
+
+Détails des commandes (type, poids, contenu)
+
+Documents d’identité (CIN, permis de conduire)
+
+Informations véhicule (pour les fournisseurs)
+
+
+b. Données collectées automatiquement
+Données de localisation (GPS en temps réel pendant les trajets)
+
+Adresse IP et type d’appareil
+
+Activité dans l’application
+
+Historique des transactions
+
+
+c. Vérification d’identité (IMPORTANT)
+Dans le cadre de la sécurité :
+
+Nous pouvons analyser les documents (CIN, permis) via des technologies automatisées (IA)
+
+Ces données sont utilisées uniquement pour vérifier l’identité
+
+Aucune décision critique n’est prise sans validation logique (anti-fraude)
+
+
+2. Finalités d’utilisation
+Vos données sont utilisées pour :
+
+Fournir les services (transport, livraison)
+
+Mettre en relation clients et fournisseurs
+
+Gérer les paiements et retraits
+
+Vérifier l’identité et lutter contre la fraude
+
+Améliorer la qualité du service
+
+Assurer la sécurité des utilisateurs
+
+Support client et résolution des litiges
+
+
+3. Partage des données
+Vos données peuvent être partagées avec :
+
+D’autres utilisateurs (nom, téléphone, localisation pendant la mission)
+
+Prestataires techniques (hébergement, cloud, support)
+
+Fournisseurs de paiement
+
+Autorités légales en cas d’obligation
+
+👉 Nous ne vendons jamais vos données personnelles
+
+
+4. Données de localisation
+Utilisées uniquement pendant les trajets
+
+Permettent le suivi en temps réel et la sécurité
+
+Désactivation possible mais certaines fonctionnalités seront limitées
+
+
+5. Sécurité
+Nous mettons en place :
+
+Chiffrement des données
+
+Accès restreint
+
+Surveillance continue
+
+⚠️ Malgré cela, aucun système n’est inviolable à 100%.
+
+
+6. Conservation des données
+Vos données sont conservées :
+
+Pendant la durée d’utilisation du service
+
+Après suppression pour obligations légales ou sécurité
+
+
+7. Vos droits
+Conformément aux lois applicables, vous pouvez :
+
+Accéder à vos données
+
+Corriger vos informations
+
+Supprimer votre compte
+
+Refuser certains traitements
+
+
+8. Lutte contre la fraude
+FAYAGE peut :
+
+Suspendre un compte en cas de documents falsifiés
+
+Bloquer l’accès en cas d’activité suspecte
+
+Vérifier manuellement certaines informations
+
+
+9. Données sensibles
+Les documents d’identité sont :
+
+Utilisés uniquement pour vérification
+
+Non partagés publiquement
+
+Protégés par des mesures renforcées
+
+
+10. Enfants
+Le service est interdit aux mineurs de moins de 18 ans.
+
+
+11. Modifications
+Nous pouvons modifier cette politique à tout moment.
+Les utilisateurs seront informés en cas de changement important.
+
+
+12. Contact
+Pour toute question :
+
+📧 Email : FAYAG.APP@GMAIL.COM
+
+📞 Téléphone : 0638563712
+
+

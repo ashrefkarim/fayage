@@ -1,0 +1,191 @@
+Politique de confidentialité – FAYAGE
+
+Dernière mise à jour : 07/05/2026
+
+Bienvenue sur FAYAGE, une plateforme de services logistiques, de transport et de livraison reliant clients et conducteurs au Maroc.
+
+La protection de vos données personnelles est une priorité absolue. Cette politique explique clairement comment nous collectons, utilisons, partageons et protégeons vos informations, conformément à la Loi n° 09-08 relative à la protection des personnes physiques à l'égard du traitement des données à caractère personnel (Maroc).
+
+Les utilisateurs qui demandent des services sont appelés « Clients ».
+Les utilisateurs qui fournissent les services de transport et de livraison sont appelés « Conducteurs ».
+Ensemble, ils sont désignés par « Utilisateurs ».
+
+FAYAGE est le responsable du traitement des données personnelles.
+
+
+─────────────────────────────────────────
+1. Données collectées
+─────────────────────────────────────────
+
+a. Données que vous fournissez directement
+• Nom et prénom
+• Numéro de téléphone
+• Adresse e-mail
+• Adresses de collecte et de livraison
+• Informations de paiement
+• Détails des commandes (type, poids, contenu déclaré)
+• Documents d'identité (CIN, permis de conduire) — Conducteurs uniquement
+• Informations véhicule (immatriculation, type) — Conducteurs uniquement
+• Photo de profil (facultatif)
+
+b. Données collectées automatiquement
+• Données de localisation GPS (en temps réel, uniquement pendant les trajets actifs)
+• Adresse IP et type d'appareil (iOS / Android)
+• Identifiants uniques de l'appareil (device ID)
+• Activité dans l'application (écrans consultés, actions effectuées)
+• Horodatage et historique des transactions
+
+c. Vérification d'identité (traitement automatisé — IA)
+Dans le cadre de la sécurité de la plateforme :
+• Les documents d'identité des Conducteurs (CIN, permis de conduire) peuvent être analysés par des technologies d'intelligence artificielle pour vérifier leur authenticité.
+• Ces données sont utilisées exclusivement à des fins de vérification.
+• Aucune décision définitive n'est prise sur la seule base d'un traitement automatisé. Toute décision de refus ou de suspension peut faire l'objet d'une révision humaine sur simple demande à FAYAG.APP@GMAIL.COM.
+
+
+─────────────────────────────────────────
+2. Finalités du traitement
+─────────────────────────────────────────
+
+Vos données sont traitées pour :
+• Fournir les services de transport et de livraison
+• Mettre en relation Clients et Conducteurs
+• Gérer les paiements, commissions et retraits
+• Vérifier l'identité et prévenir la fraude
+• Améliorer la qualité et la sécurité du service
+• Assurer le support client et la résolution des litiges
+• Envoyer des notifications relatives à vos commandes
+• Respecter nos obligations légales et réglementaires
+
+La base juridique du traitement est :
+• L'exécution du contrat (fourniture du service)
+• Le consentement explicite (documents d'identité, localisation)
+• L'intérêt légitime (sécurité, prévention de la fraude)
+• L'obligation légale
+
+
+─────────────────────────────────────────
+3. Partage des données
+─────────────────────────────────────────
+
+Vos données peuvent être partagées avec :
+• D'autres utilisateurs de la plateforme : uniquement les informations nécessaires à la mission (nom, numéro de téléphone, localisation pendant le trajet)
+• Prestataires techniques : hébergement cloud (Railway, Supabase), stockage de fichiers, infrastructure serveur
+• Fournisseurs de services de paiement, dans le strict cadre des transactions
+• Autorités légales, judiciaires ou réglementaires en cas d'obligation légale ou de réquisition judiciaire
+
+👉 FAYAGE ne vend jamais vos données personnelles à des tiers.
+👉 Tout prestataire tiers est soumis à des obligations contractuelles de confidentialité.
+
+Transferts internationaux : certains de nos prestataires techniques peuvent héberger des données hors du Maroc. Ces transferts sont encadrés par des garanties contractuelles appropriées.
+
+
+─────────────────────────────────────────
+4. Données de localisation
+─────────────────────────────────────────
+
+• La localisation GPS est collectée uniquement lorsqu'une mission est en cours.
+• Elle sert au suivi en temps réel, à la sécurité des utilisateurs et à la qualité du service.
+• Vous pouvez désactiver l'accès à la localisation dans les paramètres de votre appareil, mais certaines fonctionnalités (suivi de commande, mise en relation) ne seront alors plus disponibles.
+• Les données de localisation ne sont pas utilisées à des fins publicitaires.
+
+
+─────────────────────────────────────────
+5. Sécurité des données
+─────────────────────────────────────────
+
+Nous mettons en œuvre les mesures suivantes :
+• Chiffrement des données en transit (HTTPS/TLS)
+• Accès restreint aux données (principe du moindre privilège)
+• Surveillance continue des accès et des anomalies
+• Stockage sécurisé des documents sensibles
+
+⚠️ Malgré toutes les précautions prises, aucun système d'information n'est inviolable à 100 %. En cas de violation de données susceptible d'affecter vos droits, nous nous engageons à vous en informer dans les meilleurs délais.
+
+
+─────────────────────────────────────────
+6. Conservation des données
+─────────────────────────────────────────
+
+• Données de compte : conservées pendant toute la durée d'utilisation du service, puis supprimées sur demande.
+• Données de transactions et factures : conservées 5 ans à compter de la transaction (obligation comptable et légale).
+• Documents d'identité : conservés jusqu'à 1 an après la désactivation du compte Conducteur, sauf obligation légale contraire.
+• Données de localisation : conservées 90 jours après la fin de la mission, puis supprimées automatiquement.
+• Journaux techniques (logs) : conservés 30 jours.
+
+Après la fin de la période de conservation, les données sont supprimées ou anonymisées de façon irréversible.
+
+
+─────────────────────────────────────────
+7. Vos droits
+─────────────────────────────────────────
+
+Conformément à la Loi n° 09-08 et aux réglementations applicables, vous disposez des droits suivants :
+
+• Droit d'accès : obtenir une copie de vos données personnelles
+• Droit de rectification : corriger des informations inexactes ou incomplètes
+• Droit à l'effacement : demander la suppression de votre compte et de vos données
+• Droit d'opposition : vous opposer à certains traitements (notamment à des fins de prospection)
+• Droit à la portabilité : recevoir vos données dans un format structuré et lisible
+• Droit de retirer votre consentement : à tout moment, sans que cela affecte la licéité des traitements antérieurs
+• Droit à un examen humain : contester toute décision prise sur la seule base d'un traitement automatisé
+
+Pour exercer vos droits, contactez-nous à : FAYAG.APP@GMAIL.COM
+Nous nous engageons à répondre dans un délai de 30 jours.
+
+Vous pouvez également adresser une réclamation à la Commission Nationale de contrôle de la protection des Données à caractère Personnel (CNDP) — www.cndp.ma
+
+
+─────────────────────────────────────────
+8. Lutte contre la fraude
+─────────────────────────────────────────
+
+Pour garantir la sécurité de tous les utilisateurs, FAYAGE se réserve le droit de :
+• Suspendre ou bloquer tout compte présentant des documents falsifiés ou des informations erronées
+• Bloquer l'accès en cas d'activité suspecte ou de comportement abusif
+• Procéder à une vérification manuelle supplémentaire si nécessaire
+• Signaler aux autorités compétentes tout acte frauduleux avéré
+
+
+─────────────────────────────────────────
+9. Protection des données sensibles
+─────────────────────────────────────────
+
+Les documents d'identité (CIN, permis de conduire, photos de véhicule) sont :
+• Collectés uniquement avec votre consentement explicite
+• Utilisés exclusivement à des fins de vérification et de sécurité
+• Jamais partagés publiquement ni vendus
+• Protégés par des mesures de sécurité renforcées (accès restreint, chiffrement)
+• Supprimés conformément aux délais définis à la section 6
+
+
+─────────────────────────────────────────
+10. Mineurs
+─────────────────────────────────────────
+
+Le service FAYAGE est strictement réservé aux personnes âgées de 18 ans et plus. Nous ne collectons pas sciemment de données relatives à des mineurs. Si vous pensez qu'un mineur a créé un compte sur notre plateforme, contactez-nous immédiatement à FAYAG.APP@GMAIL.COM.
+
+
+─────────────────────────────────────────
+11. Cookies et identifiants d'appareils
+─────────────────────────────────────────
+
+Notre application mobile utilise des identifiants d'appareils (device ID) et des technologies de session pour assurer le bon fonctionnement du service et votre authentification. Ces identifiants ne sont pas utilisés à des fins publicitaires. Vous pouvez réinitialiser l'identifiant publicitaire de votre appareil depuis les paramètres de votre téléphone.
+
+
+─────────────────────────────────────────
+12. Modifications de la politique
+─────────────────────────────────────────
+
+FAYAGE se réserve le droit de modifier cette politique à tout moment. En cas de modification substantielle, les utilisateurs seront informés via une notification dans l'application et/ou par e-mail au moins 15 jours avant l'entrée en vigueur des changements. La date de dernière mise à jour figure en haut de ce document.
+
+
+─────────────────────────────────────────
+13. Contact
+─────────────────────────────────────────
+
+Pour toute question, demande d'exercice de droits ou réclamation relative à vos données personnelles :
+
+📧 Email : FAYAG.APP@GMAIL.COM
+📞 Téléphone : 0638563712
+
+Responsable du traitement : FAYAGE

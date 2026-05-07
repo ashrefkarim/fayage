@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "eCMOZcWURcGZyRYzZ4GZS"
+uri = "file://politique_confidentialite_fayage.txt"
+type = "text"
+title = "Politique de confidentialité FAYAGE — version améliorée"
