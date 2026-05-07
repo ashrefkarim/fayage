@@ -811,20 +811,20 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     marginBottom: Spacing["2xl"],
-    width: width * 0.7,
+    width: 160,
     alignItems: "center",
   },
   logoGradient: {
-    width: width * 0.7,
-    height: width * 0.7,
-    borderRadius: 32,
+    width: 160,
+    height: 160,
+    borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
   },
   logo: {
-    width: width * 0.7,
-    height: width * 0.7,
+    width: 160,
+    height: 160,
   },
   title: {
     color: "#FFFFFF",
