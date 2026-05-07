@@ -663,6 +663,7 @@ export default function DriverRegistrationScreen() {
     isScanning = false,
     scanSuccess = false,
     scanError = false,
+    scanWarning = false,
     scanAnim = cinScanAnim,
   }: {
     label: string;
@@ -671,13 +672,14 @@ export default function DriverRegistrationScreen() {
     isScanning?: boolean;
     scanSuccess?: boolean;
     scanError?: boolean;
+    scanWarning?: boolean;
     scanAnim?: Animated.Value;
   }) => {
     const hasDocument = !!documents[documentKey];
     const hasError = !!errors[documentKey];
 
-    const badgeColor = isScanning ? theme.primary : scanSuccess ? theme.success : theme.success;
-    const badgeIcon = isScanning ? "loader" : "check-circle";
+    const badgeColor = isScanning ? theme.primary : scanWarning ? "#F59E0B" : scanSuccess ? theme.success : theme.success;
+    const badgeIcon = isScanning ? "loader" : scanWarning ? "alert-triangle" : "check-circle";
 
     return (
       <View style={styles.documentCard}>
@@ -741,6 +743,14 @@ export default function DriverRegistrationScreen() {
               <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(5,150,105,0.15)", borderRadius: 10, alignItems: "center", justifyContent: "center" }]}>
                 <View style={{ backgroundColor: theme.success, borderRadius: 30, padding: 10 }}>
                   <Icon name="check" size={28} color="#fff" />
+                </View>
+              </View>
+            )}
+            {/* Warning overlay (expired) */}
+            {scanWarning && !isScanning && (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(245,158,11,0.15)", borderRadius: 10, alignItems: "center", justifyContent: "center" }]}>
+                <View style={{ backgroundColor: "#F59E0B", borderRadius: 30, padding: 10 }}>
+                  <Icon name="alert-triangle" size={28} color="#fff" />
                 </View>
               </View>
             )}
@@ -1022,7 +1032,8 @@ export default function DriverRegistrationScreen() {
           icon="award"
           isScanning={licenseBackStatus === "checking"}
           scanSuccess={licenseBackStatus === "passed"}
-          scanError={licenseBackStatus === "expired" || licenseBackStatus === "error"}
+          scanWarning={licenseBackStatus === "expired"}
+          scanError={licenseBackStatus === "error"}
           scanAnim={licenseBackScanAnim}
         />
         {licenseBackStatus === "checking" && (
@@ -1081,7 +1092,8 @@ export default function DriverRegistrationScreen() {
           icon="truck"
           isScanning={carteGriseStatus === "checking"}
           scanSuccess={carteGriseStatus === "passed"}
-          scanError={carteGriseStatus === "expired" || carteGriseStatus === "error"}
+          scanWarning={carteGriseStatus === "expired"}
+          scanError={carteGriseStatus === "error"}
           scanAnim={carteGriseScanAnim}
         />
         {carteGriseStatus === "checking" && (
@@ -1134,10 +1146,6 @@ export default function DriverRegistrationScreen() {
           label={t("vehicleRegistrationBack")}
           documentKey="vehicleRegistrationBack"
           icon="truck"
-          isScanning={carteGriseStatus === "checking"}
-          scanSuccess={carteGriseStatus === "passed"}
-          scanError={carteGriseStatus === "expired" || carteGriseStatus === "error"}
-          scanAnim={carteGriseScanAnim}
         />
       </ScrollView>
     </View>
