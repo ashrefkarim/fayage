@@ -34,7 +34,7 @@ export default function EditProfileScreen() {
   const headerHeight = useHeaderPadding();
   const navigation = useNavigation();
   const { theme } = useTheme();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, language } = useLanguage();
   const { user, updateUser } = useAuth();
 
   const [editMode, setEditMode] = useState<EditMode>("profile");

@@ -32,26 +32,42 @@ export default function SupportScreen() {
 
   const handleEmailPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const email = "support@fayage.ma";
+    const email = "FAYAG.APP@GMAIL.COM";
     const subject = encodeURIComponent("Support FAYAGE");
     const url = `mailto:${email}?subject=${subject}`;
-    
     try {
       await Linking.openURL(url);
     } catch (error) {
-      console.error("Failed to open email:", error);
+      // silent
     }
   };
 
   const handlePhonePress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const phone = "+212500000000";
-    const url = Platform.OS === "ios" ? `tel:${phone}` : `tel:${phone}`;
-    
+    const phone = "+212638563712";
+    const url = `tel:${phone}`;
     try {
       await Linking.openURL(url);
     } catch (error) {
-      console.error("Failed to open phone:", error);
+      // silent
+    }
+  };
+
+  const handleTermsPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      await Linking.openURL("https://sites.google.com/view/fayage-terms");
+    } catch (error) {
+      // silent
+    }
+  };
+
+  const handlePrivacyPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      await Linking.openURL("https://sites.google.com/view/fayage-privacy");
+    } catch (error) {
+      // silent
     }
   };
 
@@ -189,7 +205,7 @@ export default function SupportScreen() {
         <View style={[styles.divider, { backgroundColor: theme.border }]} />
         <Pressable
           style={[styles.aboutItem, { flexDirection: isRTL ? "row-reverse" : "row" }]}
-          onPress={() => {}}
+          onPress={handleTermsPress}
         >
           <ThemedText>{t("termsAndConditions")}</ThemedText>
           <Icon
@@ -201,7 +217,7 @@ export default function SupportScreen() {
         <View style={[styles.divider, { backgroundColor: theme.border }]} />
         <Pressable
           style={[styles.aboutItem, { flexDirection: isRTL ? "row-reverse" : "row" }]}
-          onPress={() => {}}
+          onPress={handlePrivacyPress}
         >
           <ThemedText>{t("privacyPolicy")}</ThemedText>
           <Icon
