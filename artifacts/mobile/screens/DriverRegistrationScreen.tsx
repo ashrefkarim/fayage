@@ -77,6 +77,8 @@ export default function DriverRegistrationScreen() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const cinScanAnim = useRef(new Animated.Value(0)).current;
+  const licenseScanAnim = useRef(new Animated.Value(0)).current;
+  const carteGriseScanAnim = useRef(new Animated.Value(0)).current;
 
   const animateStep = (fn: () => void, direction: 1 | -1 = 1) => {
     Animated.parallel([
@@ -97,17 +99,31 @@ export default function DriverRegistrationScreen() {
 
   useEffect(() => {
     if (cinCheckStatus === "checking") {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(cinScanAnim, { toValue: 1, duration: 1600, useNativeDriver: true }),
-          Animated.timing(cinScanAnim, { toValue: 0, duration: 1600, useNativeDriver: true }),
-        ])
-      ).start();
-    } else {
-      cinScanAnim.stopAnimation();
-      cinScanAnim.setValue(0);
-    }
+      Animated.loop(Animated.sequence([
+        Animated.timing(cinScanAnim, { toValue: 1, duration: 1400, useNativeDriver: true }),
+        Animated.timing(cinScanAnim, { toValue: 0, duration: 1400, useNativeDriver: true }),
+      ])).start();
+    } else { cinScanAnim.stopAnimation(); cinScanAnim.setValue(0); }
   }, [cinCheckStatus]);
+
+  useEffect(() => {
+    const isChecking = licenseFrontStatus === "checking" || licenseBackStatus === "checking";
+    if (isChecking) {
+      Animated.loop(Animated.sequence([
+        Animated.timing(licenseScanAnim, { toValue: 1, duration: 1400, useNativeDriver: true }),
+        Animated.timing(licenseScanAnim, { toValue: 0, duration: 1400, useNativeDriver: true }),
+      ])).start();
+    } else { licenseScanAnim.stopAnimation(); licenseScanAnim.setValue(0); }
+  }, [licenseFrontStatus, licenseBackStatus]);
+
+  useEffect(() => {
+    if (carteGriseStatus === "checking") {
+      Animated.loop(Animated.sequence([
+        Animated.timing(carteGriseScanAnim, { toValue: 1, duration: 1400, useNativeDriver: true }),
+        Animated.timing(carteGriseScanAnim, { toValue: 0, duration: 1400, useNativeDriver: true }),
+      ])).start();
+    } else { carteGriseScanAnim.stopAnimation(); carteGriseScanAnim.setValue(0); }
+  }, [carteGriseStatus]);
   const [cinCheckDetail, setCinCheckDetail] = useState<{ fr: string; ar: string } | null>(null);
   const [cinExtracted, setCinExtracted] = useState<{ number: string | null; expiryDate: string | null; dateOfBirth: string | null } | null>(null);
 
@@ -649,133 +665,206 @@ export default function DriverRegistrationScreen() {
     }
   };
 
-  const DocumentUploadCard = ({
+  // ── Reusable doc slot (one side of a card) ──────────────────────────────
+  const DocSlot = ({
     label,
-    documentKey,
-    icon,
+    labelAr,
+    docKey,
+    scanAnim,
     isScanning = false,
     scanSuccess = false,
     scanError = false,
+    accentColor,
   }: {
     label: string;
-    documentKey: keyof DriverDocuments;
-    icon: IconName;
+    labelAr: string;
+    docKey: keyof DriverDocuments;
+    scanAnim: Animated.Value;
     isScanning?: boolean;
     scanSuccess?: boolean;
     scanError?: boolean;
+    accentColor: string;
   }) => {
-    const hasDocument = !!documents[documentKey];
-    const hasError = !!errors[documentKey];
-
-    const badgeColor = isScanning ? theme.primary : scanSuccess ? theme.success : theme.success;
-    const badgeIcon = isScanning ? "loader" : "check-circle";
+    const uri = documents[docKey];
+    const hasError = !!errors[docKey];
+    const slotH = 108;
 
     return (
-      <View style={styles.documentCard}>
-        <View style={[styles.documentHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-          <View style={[styles.documentInfo, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-            <View style={[styles.documentIcon, { backgroundColor: theme.primary + "15" }]}>
-              <Icon name={icon} size={20} color={theme.primary} />
-            </View>
-            <ThemedText style={styles.documentLabel}>{label}</ThemedText>
-          </View>
-          {hasDocument ? (
-            <View style={[styles.uploadedBadge, { backgroundColor: badgeColor + "15" }]}>
-              <Icon name={badgeIcon} size={14} color={badgeColor} />
-              <ThemedText style={[styles.uploadedText, { color: badgeColor }]}>
-                {isScanning
-                  ? (language === "ar" ? "جارٍ المسح..." : "Scan...")
-                  : t("photoUploaded")}
-              </ThemedText>
-            </View>
-          ) : null}
-        </View>
-        {hasDocument ? (
-          <View style={styles.previewContainer}>
-            <Image
-              source={{ uri: documents[documentKey] }}
-              style={styles.previewImage}
-              resizeMode="cover"
-            />
-            {/* Scanning animation overlay */}
-            {isScanning && (
-              <View style={[StyleSheet.absoluteFill, { overflow: "hidden", borderRadius: 10 }]}>
-                <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(37,99,235,0.08)" }]} />
-                {/* Scan line */}
-                <Animated.View
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    right: 0,
-                    height: 3,
-                    backgroundColor: "#3B82F6",
-                    shadowColor: "#3B82F6",
-                    shadowOpacity: 1,
-                    shadowRadius: 8,
-                    transform: [{
-                      translateY: cinScanAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0, 140],
-                      }),
-                    }],
-                  }}
-                />
-                {/* Corner brackets */}
-                <View style={{ position: "absolute", top: 8, left: 8, width: 20, height: 20, borderTopWidth: 3, borderLeftWidth: 3, borderColor: "#3B82F6", borderRadius: 2 }} />
-                <View style={{ position: "absolute", top: 8, right: 8, width: 20, height: 20, borderTopWidth: 3, borderRightWidth: 3, borderColor: "#3B82F6", borderRadius: 2 }} />
-                <View style={{ position: "absolute", bottom: 8, left: 8, width: 20, height: 20, borderBottomWidth: 3, borderLeftWidth: 3, borderColor: "#3B82F6", borderRadius: 2 }} />
-                <View style={{ position: "absolute", bottom: 8, right: 8, width: 20, height: 20, borderBottomWidth: 3, borderRightWidth: 3, borderColor: "#3B82F6", borderRadius: 2 }} />
-              </View>
-            )}
-            {/* Success overlay */}
-            {scanSuccess && !isScanning && (
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(5,150,105,0.15)", borderRadius: 10, alignItems: "center", justifyContent: "center" }]}>
-                <View style={{ backgroundColor: theme.success, borderRadius: 30, padding: 10 }}>
-                  <Icon name="check" size={28} color="#fff" />
+      <View style={{ flex: 1 }}>
+        <Pressable
+          onPress={() => showImagePickerOptions(docKey)}
+          style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+        >
+          <View style={{
+            height: slotH,
+            borderRadius: 12,
+            overflow: "hidden",
+            borderWidth: uri ? 0 : 1.5,
+            borderStyle: uri ? "solid" : "dashed",
+            borderColor: hasError ? theme.error : isScanning ? accentColor : (uri ? "transparent" : theme.border),
+            backgroundColor: uri ? "transparent" : (isDark ? "#1A2035" : "#F0F4FF"),
+          }}>
+            {uri ? (
+              <>
+                <Image source={{ uri }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+                {/* scan overlay */}
+                {isScanning && (
+                  <View style={[StyleSheet.absoluteFill, { overflow: "hidden" }]}>
+                    <View style={[StyleSheet.absoluteFill, { backgroundColor: accentColor + "18" }]} />
+                    <Animated.View style={{
+                      position: "absolute", left: 0, right: 0, height: 2.5,
+                      backgroundColor: accentColor,
+                      shadowColor: accentColor, shadowOpacity: 1, shadowRadius: 10,
+                      transform: [{ translateY: scanAnim.interpolate({ inputRange: [0, 1], outputRange: [0, slotH - 4] }) }],
+                    }} />
+                    {/* corners */}
+                    {[
+                      { top: 6, left: 6, borderTopWidth: 2.5, borderLeftWidth: 2.5 },
+                      { top: 6, right: 6, borderTopWidth: 2.5, borderRightWidth: 2.5 },
+                      { bottom: 6, left: 6, borderBottomWidth: 2.5, borderLeftWidth: 2.5 },
+                      { bottom: 6, right: 6, borderBottomWidth: 2.5, borderRightWidth: 2.5 },
+                    ].map((s, i) => (
+                      <View key={i} style={[{ position: "absolute", width: 16, height: 16, borderColor: accentColor, borderRadius: 2 }, s]} />
+                    ))}
+                  </View>
+                )}
+                {/* success overlay */}
+                {scanSuccess && !isScanning && (
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: "#05966920", alignItems: "center", justifyContent: "center" }]}>
+                    <View style={{ backgroundColor: theme.success, borderRadius: 20, padding: 6 }}>
+                      <Icon name="check" size={18} color="#fff" />
+                    </View>
+                  </View>
+                )}
+                {/* error overlay */}
+                {scanError && !isScanning && (
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: "#DC262620", alignItems: "center", justifyContent: "center" }]}>
+                    <View style={{ backgroundColor: theme.error, borderRadius: 20, padding: 6 }}>
+                      <Icon name="x" size={18} color="#fff" />
+                    </View>
+                  </View>
+                )}
+                {/* retake button */}
+                <View style={{ position: "absolute", bottom: 6, right: 6 }}>
+                  <View style={{ backgroundColor: "rgba(0,0,0,0.55)", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, flexDirection: "row", alignItems: "center", gap: 4 }}>
+                    <Icon name="camera" size={11} color="#fff" />
+                    <ThemedText style={{ color: "#fff", fontSize: 10, fontWeight: "600" }}>
+                      {language === "ar" ? "تعديل" : "Modifier"}
+                    </ThemedText>
+                  </View>
                 </View>
-              </View>
-            )}
-            {/* Error overlay */}
-            {scanError && !isScanning && (
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(220,38,38,0.15)", borderRadius: 10, alignItems: "center", justifyContent: "center" }]}>
-                <View style={{ backgroundColor: theme.error, borderRadius: 30, padding: 10 }}>
-                  <Icon name="x" size={28} color="#fff" />
+              </>
+            ) : (
+              <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: accentColor + "18", alignItems: "center", justifyContent: "center" }}>
+                  <Icon name="camera" size={18} color={hasError ? theme.error : accentColor} />
                 </View>
+                <ThemedText style={{ fontSize: 11, fontWeight: "600", color: hasError ? theme.error : accentColor, textAlign: "center" }}>
+                  {language === "ar" ? labelAr : label}
+                </ThemedText>
+                <ThemedText style={{ fontSize: 10, color: hasError ? theme.error : theme.textSecondary, textAlign: "center", lineHeight: 13 }}>
+                  {language === "ar" ? "اضغط للتصوير" : "Appuyer pour scanner"}
+                </ThemedText>
               </View>
             )}
-            <Pressable
-              onPress={() => showImagePickerOptions(documentKey)}
-              style={[styles.changeButton, { backgroundColor: theme.backgroundSecondary }]}
-            >
-              <Icon name="edit-2" size={16} color={theme.primary} />
-              <ThemedText style={{ color: theme.primary, fontSize: 13, fontWeight: "500" }}>
-                {t("changePhoto")}
-              </ThemedText>
-            </Pressable>
           </View>
-        ) : (
-          <Pressable
-            onPress={() => showImagePickerOptions(documentKey)}
-            style={({ pressed }) => [
-              styles.uploadArea,
-              {
-                borderColor: hasError ? theme.error : theme.border,
-                backgroundColor: hasError ? theme.error + "05" : theme.backgroundSecondary,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <Icon name="upload" size={32} color={hasError ? theme.error : theme.textSecondary} />
-            <ThemedText style={{ color: hasError ? theme.error : theme.textSecondary, marginTop: Spacing.sm }}>
-              {t("uploadPhoto")}
+        </Pressable>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 6, gap: 4 }}>
+          {uri && isScanning ? (
+            <><ActivityIndicator size="small" color={accentColor} /><ThemedText style={{ fontSize: 10, color: accentColor, fontWeight: "600" }}>{language === "ar" ? "مسح..." : "Scan..."}</ThemedText></>
+          ) : uri && scanSuccess ? (
+            <><Icon name="check-circle" size={12} color={theme.success} /><ThemedText style={{ fontSize: 10, color: theme.success, fontWeight: "600" }}>{language === "ar" ? "مقبول" : "Validé"}</ThemedText></>
+          ) : uri && scanError ? (
+            <><Icon name="alert-circle" size={12} color={theme.error} /><ThemedText style={{ fontSize: 10, color: theme.error, fontWeight: "600" }}>{language === "ar" ? "خطأ" : "Erreur"}</ThemedText></>
+          ) : (
+            <ThemedText style={{ fontSize: 11, color: theme.textSecondary, fontWeight: "500" }}>
+              {language === "ar" ? labelAr : label}
             </ThemedText>
-          </Pressable>
-        )}
-        {hasError ? (
-          <ThemedText style={[styles.errorText, { color: theme.error }]}>
-            {errors[documentKey]}
-          </ThemedText>
+          )}
+        </View>
+        {hasError && !uri ? (
+          <ThemedText style={{ fontSize: 10, color: theme.error, textAlign: "center", marginTop: 2 }}>{errors[docKey]}</ThemedText>
         ) : null}
+      </View>
+    );
+  };
+
+  // ── Beautiful grouped document card ─────────────────────────────────────
+  const DocumentGroupCard = ({
+    titleFr, titleAr, subtitleFr, subtitleAr,
+    gradientColors, iconName,
+    frontKey, backKey,
+    frontLabelFr, frontLabelAr, backLabelFr, backLabelAr,
+    scanAnim, accentColor,
+    frontIsScanning, frontScanSuccess, frontScanError,
+    backIsScanning, backScanSuccess, backScanError,
+    statusNode,
+  }: {
+    titleFr: string; titleAr: string;
+    subtitleFr: string; subtitleAr: string;
+    gradientColors: [string, string];
+    iconName: IconName;
+    frontKey: keyof DriverDocuments; backKey: keyof DriverDocuments;
+    frontLabelFr: string; frontLabelAr: string;
+    backLabelFr: string; backLabelAr: string;
+    scanAnim: Animated.Value; accentColor: string;
+    frontIsScanning?: boolean; frontScanSuccess?: boolean; frontScanError?: boolean;
+    backIsScanning?: boolean; backScanSuccess?: boolean; backScanError?: boolean;
+    statusNode?: React.ReactNode;
+  }) => {
+    const frontDone = !!documents[frontKey];
+    const backDone = !!documents[backKey];
+    const bothDone = frontDone && backDone;
+
+    return (
+      <View style={{
+        borderRadius: 18,
+        overflow: "hidden",
+        backgroundColor: isDark ? "#111827" : "#FFFFFF",
+        shadowColor: accentColor,
+        shadowOpacity: isDark ? 0.25 : 0.12,
+        shadowRadius: 16,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: isDark ? "#1F2937" : "#E8EEF6",
+      }}>
+        {/* Header */}
+        <LinearGradient colors={gradientColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+          style={{ paddingHorizontal: 16, paddingVertical: 14, flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 12 }}>
+          <View style={{ width: 44, height: 44, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}>
+            <Icon name={iconName} size={22} color="#fff" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <ThemedText style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>
+              {language === "ar" ? titleAr : titleFr}
+            </ThemedText>
+            <ThemedText style={{ color: "rgba(255,255,255,0.75)", fontSize: 11, marginTop: 2 }}>
+              {language === "ar" ? subtitleAr : subtitleFr}
+            </ThemedText>
+          </View>
+          {bothDone && (
+            <View style={{ backgroundColor: "rgba(255,255,255,0.22)", borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <Icon name="check-circle" size={13} color="#fff" />
+              <ThemedText style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}>
+                {language === "ar" ? "مكتمل" : "Complet"}
+              </ThemedText>
+            </View>
+          )}
+        </LinearGradient>
+
+        {/* Slots */}
+        <View style={{ padding: 14, gap: 10 }}>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <DocSlot label={frontLabelFr} labelAr={frontLabelAr} docKey={frontKey} scanAnim={scanAnim}
+              isScanning={frontIsScanning} scanSuccess={frontScanSuccess} scanError={frontScanError} accentColor={accentColor} />
+            <DocSlot label={backLabelFr} labelAr={backLabelAr} docKey={backKey} scanAnim={scanAnim}
+              isScanning={backIsScanning} scanSuccess={backScanSuccess} scanError={backScanError} accentColor={accentColor} />
+          </View>
+
+          {/* Status banner */}
+          {statusNode}
+        </View>
       </View>
     );
   };
@@ -839,6 +928,45 @@ export default function DriverRegistrationScreen() {
     </View>
   );
 
+  // ── Status banner helper ─────────────────────────────────────────────────
+  const StatusBanner = ({ status, checkingMsg, detail, extracted, type }: {
+    status: string;
+    checkingMsg: { fr: string; ar: string };
+    detail?: { fr: string; ar: string } | null;
+    extracted?: { number?: string | null; expiryDate?: string | null; dateOfBirth?: string | null } | null;
+    type: "cin" | "license" | "carteGrise";
+  }) => {
+    if (status === "idle") return null;
+
+    if (status === "checking") return (
+      <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "15", borderColor: theme.primary + "40" }]}>
+        <ActivityIndicator size="small" color={theme.primary} />
+        <ThemedText style={[styles.cinStatusText, { color: theme.primary }]}>
+          {language === "ar" ? checkingMsg.ar : checkingMsg.fr}
+        </ThemedText>
+      </View>
+    );
+
+    const isSuccess = status === "passed";
+    const isWarning = status === "expired" || status === "error";
+    const color = isSuccess ? theme.success : isWarning ? theme.warning : theme.error;
+    const icon: IconName = isSuccess ? "check-circle" : isWarning ? "alert-triangle" : "x-circle";
+    const msg = detail ? (language === "ar" ? detail.ar : detail.fr)
+      : isSuccess ? (language === "ar" ? "✅ مقبول وسارٍ" : "✅ Valide et accepté") : "";
+
+    return (
+      <View style={[styles.cinStatusBanner, { backgroundColor: color + "15", borderColor: color + "40" }]}>
+        <Icon name={icon} size={15} color={color} />
+        <View style={{ flex: 1, gap: 3 }}>
+          {msg ? <ThemedText style={[styles.cinStatusText, { color, textAlign: isRTL ? "right" : "left" }]}>{msg}</ThemedText> : null}
+          {extracted?.number ? <ThemedText style={[styles.cinExtractedRow, { color }]}>{language === "ar" ? `رقم: ${extracted.number}` : `Numéro : ${extracted.number}`}</ThemedText> : null}
+          {extracted?.expiryDate ? <ThemedText style={[styles.cinExtractedRow, { color }]}>{language === "ar" ? `الصلاحية: ${extracted.expiryDate}` : `Valide jusqu'au : ${extracted.expiryDate}`}</ThemedText> : null}
+          {extracted?.dateOfBirth ? <ThemedText style={[styles.cinExtractedRow, { color }]}>{language === "ar" ? `الميلاد: ${extracted.dateOfBirth}` : `Naissance : ${extracted.dateOfBirth}`}</ThemedText> : null}
+        </View>
+      </View>
+    );
+  };
+
   const renderStep3 = () => (
     <View style={styles.stepContent}>
       <View style={styles.stepHeader}>
@@ -851,247 +979,109 @@ export default function DriverRegistrationScreen() {
         </ThemedText>
       </View>
 
-
-      <ScrollView
-        style={styles.documentsScroll}
-        contentContainerStyle={styles.documentsContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        <ThemedText type="label" style={[styles.documentSectionTitle, { color: theme.textSecondary }]}>
-          {t("cinSection")}
-        </ThemedText>
-        <DocumentUploadCard
-          label={t("cinFront")}
-          documentKey="cinFront"
-          icon="credit-card"
-          isScanning={cinCheckStatus === "checking"}
-          scanSuccess={cinCheckStatus === "passed"}
-          scanError={cinCheckStatus === "mismatch" || cinCheckStatus === "expired" || cinCheckStatus === "underage" || cinCheckStatus === "both_failed"}
+      <View style={{ gap: 16 }}>
+        {/* ── CIN ── */}
+        <DocumentGroupCard
+          titleFr="Carte Nationale d'Identité"
+          titleAr="بطاقة الهوية الوطنية"
+          subtitleFr="Recto + Verso · Vérification IA"
+          subtitleAr="الوجه الأمامي + الخلفي · تحقق ذكاء اصطناعي"
+          gradientColors={["#1E3A8A", "#2563EB"]}
+          iconName="credit-card"
+          frontKey="cinFront"
+          backKey="cinBack"
+          frontLabelFr="Recto"
+          frontLabelAr="الوجه الأمامي"
+          backLabelFr="Verso"
+          backLabelAr="الوجه الخلفي"
+          scanAnim={cinScanAnim}
+          accentColor="#2563EB"
+          frontIsScanning={cinCheckStatus === "checking"}
+          frontScanSuccess={cinCheckStatus === "passed"}
+          frontScanError={["mismatch","expired","underage","both_failed"].includes(cinCheckStatus)}
+          statusNode={
+            <StatusBanner
+              status={cinCheckStatus}
+              checkingMsg={{ fr: "Lecture de la CIN en cours...", ar: "جارٍ قراءة بيانات البطاقة..." }}
+              detail={cinCheckDetail}
+              extracted={cinExtracted ?? undefined}
+              type="cin"
+            />
+          }
         />
 
-        {cinCheckStatus === "checking" && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "18", borderColor: theme.primary + "60" }]}>
-            <ActivityIndicator size="small" color={theme.primary} />
-            <ThemedText style={[styles.cinStatusText, { color: theme.primary }]}>
-              {language === "ar" ? "جارٍ قراءة بيانات البطاقة..." : "Lecture de la carte en cours..."}
-            </ThemedText>
-          </View>
-        )}
+        {/* ── Permis de conduire ── */}
+        <DocumentGroupCard
+          titleFr="Permis de conduire"
+          titleAr="رخصة القيادة"
+          subtitleFr="Recto + Verso · Vérification IA"
+          subtitleAr="الوجه الأمامي + الخلفي · تحقق ذكاء اصطناعي"
+          gradientColors={["#065F46", "#059669"]}
+          iconName="award"
+          frontKey="drivingLicenseFront"
+          backKey="drivingLicenseBack"
+          frontLabelFr="Recto"
+          frontLabelAr="الوجه الأمامي"
+          backLabelFr="Verso"
+          backLabelAr="الوجه الخلفي"
+          scanAnim={licenseScanAnim}
+          accentColor="#059669"
+          frontIsScanning={licenseFrontStatus === "checking"}
+          frontScanSuccess={licenseFrontStatus === "passed"}
+          frontScanError={licenseFrontStatus === "mismatch"}
+          backIsScanning={licenseBackStatus === "checking"}
+          backScanSuccess={licenseBackStatus === "passed"}
+          backScanError={licenseBackStatus === "expired"}
+          statusNode={
+            <>
+              <StatusBanner
+                status={licenseFrontStatus}
+                checkingMsg={{ fr: "Vérification CIN sur le permis...", ar: "جارٍ التحقق من رقم CIN في الرخصة..." }}
+                detail={licenseFrontDetail}
+                extracted={licenseFrontExtracted ?? undefined}
+                type="license"
+              />
+              <StatusBanner
+                status={licenseBackStatus}
+                checkingMsg={{ fr: "Vérification expiration du permis...", ar: "جارٍ التحقق من تاريخ انتهاء الرخصة..." }}
+                detail={licenseBackDetail}
+                extracted={licenseBackExtracted ?? undefined}
+                type="license"
+              />
+            </>
+          }
+        />
 
-        {cinCheckStatus === "passed" && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.success + "18", borderColor: theme.success + "60" }]}>
-            <Icon name="check-circle" size={16} color={theme.success} />
-            <View style={{ flex: 1, gap: 4 }}>
-              <ThemedText style={[styles.cinStatusText, { color: theme.success }]}>
-                {language === "ar" ? "✅ بطاقة CIN مطابقة وسارية" : "✅ CIN valide et correspondante"}
-              </ThemedText>
-              {cinExtracted?.number ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.success }]}>
-                  {language === "ar" ? `رقم البطاقة: ${cinExtracted.number}` : `Numéro : ${cinExtracted.number}`}
-                </ThemedText>
-              ) : null}
-              {cinExtracted?.expiryDate ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.success }]}>
-                  {language === "ar" ? `تاريخ الانتهاء: ${cinExtracted.expiryDate}` : `Valable jusqu'au : ${cinExtracted.expiryDate}`}
-                </ThemedText>
-              ) : null}
-              {cinExtracted?.dateOfBirth ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.success }]}>
-                  {language === "ar" ? `تاريخ الميلاد: ${cinExtracted.dateOfBirth}` : `Date de naissance : ${cinExtracted.dateOfBirth}`}
-                </ThemedText>
-              ) : null}
-            </View>
-          </View>
-        )}
-
-        {(cinCheckStatus === "mismatch" || cinCheckStatus === "expired" || cinCheckStatus === "underage" || cinCheckStatus === "both_failed") && cinCheckDetail && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.error + "18", borderColor: theme.error + "60" }]}>
-            <Icon name="x-circle" size={16} color={theme.error} />
-            <View style={{ flex: 1, gap: 4 }}>
-              <ThemedText style={[styles.cinStatusText, { color: theme.error, textAlign: isRTL ? "right" : "left" }]}>
-                {language === "ar" ? cinCheckDetail.ar : cinCheckDetail.fr}
-              </ThemedText>
-              {cinExtracted?.number ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.error }]}>
-                  {language === "ar" ? `رقم مقروء على البطاقة: ${cinExtracted.number}` : `Numéro lu sur la carte : ${cinExtracted.number}`}
-                </ThemedText>
-              ) : null}
-              {cinExtracted?.expiryDate ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.error }]}>
-                  {language === "ar" ? `تاريخ الانتهاء: ${cinExtracted.expiryDate}` : `Date d'expiration : ${cinExtracted.expiryDate}`}
-                </ThemedText>
-              ) : null}
-              {cinExtracted?.dateOfBirth ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.error }]}>
-                  {language === "ar" ? `تاريخ الميلاد: ${cinExtracted.dateOfBirth}` : `Date de naissance : ${cinExtracted.dateOfBirth}`}
-                </ThemedText>
-              ) : null}
-            </View>
-          </View>
-        )}
-
-        {cinCheckStatus === "error" && cinCheckDetail && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.warning + "18", borderColor: theme.warning + "60" }]}>
-            <Icon name="alert-triangle" size={16} color={theme.warning} />
-            <ThemedText style={[styles.cinStatusText, { color: theme.warning, textAlign: isRTL ? "right" : "left" }]}>
-              {language === "ar" ? cinCheckDetail.ar : cinCheckDetail.fr}
-            </ThemedText>
-          </View>
-        )}
-
-        <DocumentUploadCard label={t("cinBack")} documentKey="cinBack" icon="credit-card" />
-
-        <ThemedText type="label" style={[styles.documentSectionTitle, { color: theme.textSecondary, marginTop: Spacing.lg }]}>
-          {t("drivingLicenseSection")}
-        </ThemedText>
-        <DocumentUploadCard label={t("drivingLicenseFront")} documentKey="drivingLicenseFront" icon="award" />
-        {licenseFrontStatus === "checking" && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "18", borderColor: theme.primary + "60" }]}>
-            <ActivityIndicator size="small" color={theme.primary} />
-            <ThemedText style={[styles.cinStatusText, { color: theme.primary }]}>
-              {language === "ar" ? "جارٍ التحقق من رقم CIN في الرخصة..." : "Vérification du numéro CIN sur le permis..."}
-            </ThemedText>
-          </View>
-        )}
-        {licenseFrontStatus === "passed" && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.success + "18", borderColor: theme.success + "60" }]}>
-            <Icon name="check-circle" size={16} color={theme.success} />
-            <View style={{ flex: 1, gap: 4 }}>
-              <ThemedText style={[styles.cinStatusText, { color: theme.success }]}>
-                {language === "ar" ? "✅ رقم CIN في الرخصة متطابق" : "✅ Numéro CIN du permis correspondant"}
-              </ThemedText>
-              {licenseFrontExtracted?.number ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.success }]}>
-                  {language === "ar" ? `رقم على الرخصة: ${licenseFrontExtracted.number}` : `Numéro sur le permis : ${licenseFrontExtracted.number}`}
-                </ThemedText>
-              ) : null}
-            </View>
-          </View>
-        )}
-        {licenseFrontStatus === "mismatch" && licenseFrontDetail && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.error + "18", borderColor: theme.error + "60" }]}>
-            <Icon name="x-circle" size={16} color={theme.error} />
-            <View style={{ flex: 1, gap: 4 }}>
-              <ThemedText style={[styles.cinStatusText, { color: theme.error, textAlign: isRTL ? "right" : "left" }]}>
-                {language === "ar" ? licenseFrontDetail.ar : licenseFrontDetail.fr}
-              </ThemedText>
-              {licenseFrontExtracted?.number ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.error }]}>
-                  {language === "ar" ? `رقم مقروء على الرخصة: ${licenseFrontExtracted.number}` : `Numéro lu sur le permis : ${licenseFrontExtracted.number}`}
-                </ThemedText>
-              ) : null}
-            </View>
-          </View>
-        )}
-        {licenseFrontStatus === "error" && licenseFrontDetail && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.warning + "18", borderColor: theme.warning + "60" }]}>
-            <Icon name="alert-triangle" size={16} color={theme.warning} />
-            <ThemedText style={[styles.cinStatusText, { color: theme.warning, textAlign: isRTL ? "right" : "left" }]}>
-              {language === "ar" ? licenseFrontDetail.ar : licenseFrontDetail.fr}
-            </ThemedText>
-          </View>
-        )}
-
-        <DocumentUploadCard label={t("drivingLicenseBack")} documentKey="drivingLicenseBack" icon="award" />
-        {licenseBackStatus === "checking" && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "18", borderColor: theme.primary + "60" }]}>
-            <ActivityIndicator size="small" color={theme.primary} />
-            <ThemedText style={[styles.cinStatusText, { color: theme.primary }]}>
-              {language === "ar" ? "جارٍ التحقق من تاريخ انتهاء الرخصة..." : "Vérification de la date d'expiration du permis..."}
-            </ThemedText>
-          </View>
-        )}
-        {licenseBackStatus === "passed" && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.success + "18", borderColor: theme.success + "60" }]}>
-            <Icon name="check-circle" size={16} color={theme.success} />
-            <View style={{ flex: 1, gap: 4 }}>
-              <ThemedText style={[styles.cinStatusText, { color: theme.success }]}>
-                {language === "ar" ? "✅ الرخصة سارية المفعول" : "✅ Permis valide"}
-              </ThemedText>
-              {licenseBackExtracted?.expiryDate ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.success }]}>
-                  {language === "ar" ? `صالح حتى: ${licenseBackExtracted.expiryDate}` : `Valable jusqu'au : ${licenseBackExtracted.expiryDate}`}
-                </ThemedText>
-              ) : null}
-            </View>
-          </View>
-        )}
-        {licenseBackStatus === "expired" && licenseBackDetail && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.warning + "18", borderColor: theme.warning + "60" }]}>
-            <Icon name="alert-triangle" size={16} color={theme.warning} />
-            <View style={{ flex: 1, gap: 4 }}>
-              <ThemedText style={[styles.cinStatusText, { color: theme.warning, textAlign: isRTL ? "right" : "left" }]}>
-                {language === "ar" ? licenseBackDetail.ar : licenseBackDetail.fr}
-              </ThemedText>
-              {licenseBackExtracted?.expiryDate ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.warning }]}>
-                  {language === "ar" ? `تاريخ الانتهاء: ${licenseBackExtracted.expiryDate}` : `Date d'expiration : ${licenseBackExtracted.expiryDate}`}
-                </ThemedText>
-              ) : null}
-            </View>
-          </View>
-        )}
-        {licenseBackStatus === "error" && licenseBackDetail && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.warning + "18", borderColor: theme.warning + "60" }]}>
-            <Icon name="alert-triangle" size={16} color={theme.warning} />
-            <ThemedText style={[styles.cinStatusText, { color: theme.warning, textAlign: isRTL ? "right" : "left" }]}>
-              {language === "ar" ? licenseBackDetail.ar : licenseBackDetail.fr}
-            </ThemedText>
-          </View>
-        )}
-
-        <ThemedText type="label" style={[styles.documentSectionTitle, { color: theme.textSecondary, marginTop: Spacing.lg }]}>
-          {t("vehicleRegistrationSection")}
-        </ThemedText>
-        <DocumentUploadCard label={t("vehicleRegistrationFront")} documentKey="vehicleRegistrationFront" icon="truck" />
-        {carteGriseStatus === "checking" && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "18", borderColor: theme.primary + "60" }]}>
-            <ActivityIndicator size="small" color={theme.primary} />
-            <ThemedText style={[styles.cinStatusText, { color: theme.primary }]}>
-              {language === "ar" ? "جارٍ التحقق من تاريخ انتهاء الوثيقة..." : "Vérification de la date d'expiration de la carte grise..."}
-            </ThemedText>
-          </View>
-        )}
-        {carteGriseStatus === "passed" && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.success + "18", borderColor: theme.success + "60" }]}>
-            <Icon name="check-circle" size={16} color={theme.success} />
-            <View style={{ flex: 1, gap: 4 }}>
-              <ThemedText style={[styles.cinStatusText, { color: theme.success }]}>
-                {language === "ar" ? "✅ الوثيقة سارية المفعول" : "✅ Carte grise valide"}
-              </ThemedText>
-              {carteGriseExtracted?.expiryDate ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.success }]}>
-                  {language === "ar" ? `صالحة حتى: ${carteGriseExtracted.expiryDate}` : `Valable jusqu'au : ${carteGriseExtracted.expiryDate}`}
-                </ThemedText>
-              ) : null}
-            </View>
-          </View>
-        )}
-        {carteGriseStatus === "expired" && carteGriseDetail && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.warning + "18", borderColor: theme.warning + "60" }]}>
-            <Icon name="alert-triangle" size={16} color={theme.warning} />
-            <View style={{ flex: 1, gap: 4 }}>
-              <ThemedText style={[styles.cinStatusText, { color: theme.warning, textAlign: isRTL ? "right" : "left" }]}>
-                {language === "ar" ? carteGriseDetail.ar : carteGriseDetail.fr}
-              </ThemedText>
-              {carteGriseExtracted?.expiryDate ? (
-                <ThemedText style={[styles.cinExtractedRow, { color: theme.warning }]}>
-                  {language === "ar" ? `تاريخ الانتهاء: ${carteGriseExtracted.expiryDate}` : `Date d'expiration : ${carteGriseExtracted.expiryDate}`}
-                </ThemedText>
-              ) : null}
-            </View>
-          </View>
-        )}
-        {carteGriseStatus === "error" && carteGriseDetail && (
-          <View style={[styles.cinStatusBanner, { backgroundColor: theme.warning + "18", borderColor: theme.warning + "60" }]}>
-            <Icon name="alert-triangle" size={16} color={theme.warning} />
-            <ThemedText style={[styles.cinStatusText, { color: theme.warning, textAlign: isRTL ? "right" : "left" }]}>
-              {language === "ar" ? carteGriseDetail.ar : carteGriseDetail.fr}
-            </ThemedText>
-          </View>
-        )}
-        <DocumentUploadCard label={t("vehicleRegistrationBack")} documentKey="vehicleRegistrationBack" icon="truck" />
-      </ScrollView>
+        {/* ── Carte Grise ── */}
+        <DocumentGroupCard
+          titleFr="Carte Grise"
+          titleAr="رخصة السيارة"
+          subtitleFr="Recto + Verso · Vérification IA"
+          subtitleAr="الوجه الأمامي + الخلفي · تحقق ذكاء اصطناعي"
+          gradientColors={["#92400E", "#D97706"]}
+          iconName="truck"
+          frontKey="vehicleRegistrationFront"
+          backKey="vehicleRegistrationBack"
+          frontLabelFr="Recto"
+          frontLabelAr="الوجه الأمامي"
+          backLabelFr="Verso"
+          backLabelAr="الوجه الخلفي"
+          scanAnim={carteGriseScanAnim}
+          accentColor="#D97706"
+          frontIsScanning={carteGriseStatus === "checking"}
+          frontScanSuccess={carteGriseStatus === "passed"}
+          frontScanError={carteGriseStatus === "expired"}
+          statusNode={
+            <StatusBanner
+              status={carteGriseStatus}
+              checkingMsg={{ fr: "Vérification carte grise...", ar: "جارٍ التحقق من تاريخ انتهاء الوثيقة..." }}
+              detail={carteGriseDetail}
+              extracted={carteGriseExtracted ?? undefined}
+              type="carteGrise"
+            />
+          }
+        />
+      </View>
     </View>
   );
 
