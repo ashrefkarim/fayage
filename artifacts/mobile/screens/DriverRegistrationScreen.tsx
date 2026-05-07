@@ -77,6 +77,9 @@ export default function DriverRegistrationScreen() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const cinScanAnim = useRef(new Animated.Value(0)).current;
+  const licenseFrontScanAnim = useRef(new Animated.Value(0)).current;
+  const licenseBackScanAnim = useRef(new Animated.Value(0)).current;
+  const carteGriseScanAnim = useRef(new Animated.Value(0)).current;
 
   const animateStep = (fn: () => void, direction: 1 | -1 = 1) => {
     Animated.parallel([
@@ -95,19 +98,24 @@ export default function DriverRegistrationScreen() {
   const [aiWarnings, setAiWarnings] = useState<AiWarning[]>([]);
   const [cinCheckStatus, setCinCheckStatus] = useState<"idle" | "checking" | "passed" | "mismatch" | "expired" | "underage" | "both_failed" | "error">("idle");
 
-  useEffect(() => {
-    if (cinCheckStatus === "checking") {
+  const makeScanLoop = (anim: Animated.Value, active: boolean) => {
+    if (active) {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(cinScanAnim, { toValue: 1, duration: 1600, useNativeDriver: true }),
-          Animated.timing(cinScanAnim, { toValue: 0, duration: 1600, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 1, duration: 1600, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0, duration: 1600, useNativeDriver: true }),
         ])
       ).start();
     } else {
-      cinScanAnim.stopAnimation();
-      cinScanAnim.setValue(0);
+      anim.stopAnimation();
+      anim.setValue(0);
     }
-  }, [cinCheckStatus]);
+  };
+
+  useEffect(() => { makeScanLoop(cinScanAnim, cinCheckStatus === "checking"); }, [cinCheckStatus]);
+  useEffect(() => { makeScanLoop(licenseFrontScanAnim, licenseFrontStatus === "checking"); }, [licenseFrontStatus]);
+  useEffect(() => { makeScanLoop(licenseBackScanAnim, licenseBackStatus === "checking"); }, [licenseBackStatus]);
+  useEffect(() => { makeScanLoop(carteGriseScanAnim, carteGriseStatus === "checking"); }, [carteGriseStatus]);
   const [cinCheckDetail, setCinCheckDetail] = useState<{ fr: string; ar: string } | null>(null);
   const [cinExtracted, setCinExtracted] = useState<{ number: string | null; expiryDate: string | null; dateOfBirth: string | null } | null>(null);
 
@@ -656,6 +664,7 @@ export default function DriverRegistrationScreen() {
     isScanning = false,
     scanSuccess = false,
     scanError = false,
+    scanAnim = cinScanAnim,
   }: {
     label: string;
     documentKey: keyof DriverDocuments;
@@ -663,6 +672,7 @@ export default function DriverRegistrationScreen() {
     isScanning?: boolean;
     scanSuccess?: boolean;
     scanError?: boolean;
+    scanAnim?: Animated.Value;
   }) => {
     const hasDocument = !!documents[documentKey];
     const hasError = !!errors[documentKey];
@@ -713,7 +723,7 @@ export default function DriverRegistrationScreen() {
                     shadowOpacity: 1,
                     shadowRadius: 8,
                     transform: [{
-                      translateY: cinScanAnim.interpolate({
+                      translateY: scanAnim.interpolate({
                         inputRange: [0, 1],
                         outputRange: [0, 140],
                       }),
@@ -958,6 +968,7 @@ export default function DriverRegistrationScreen() {
           isScanning={licenseFrontStatus === "checking"}
           scanSuccess={licenseFrontStatus === "passed"}
           scanError={licenseFrontStatus === "mismatch" || licenseFrontStatus === "error"}
+          scanAnim={licenseFrontScanAnim}
         />
         {licenseFrontStatus === "checking" && (
           <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "18", borderColor: theme.primary + "60" }]}>
@@ -1013,6 +1024,7 @@ export default function DriverRegistrationScreen() {
           isScanning={licenseBackStatus === "checking"}
           scanSuccess={licenseBackStatus === "passed"}
           scanError={licenseBackStatus === "expired" || licenseBackStatus === "error"}
+          scanAnim={licenseBackScanAnim}
         />
         {licenseBackStatus === "checking" && (
           <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "18", borderColor: theme.primary + "60" }]}>
@@ -1071,6 +1083,7 @@ export default function DriverRegistrationScreen() {
           isScanning={carteGriseStatus === "checking"}
           scanSuccess={carteGriseStatus === "passed"}
           scanError={carteGriseStatus === "expired" || carteGriseStatus === "error"}
+          scanAnim={carteGriseScanAnim}
         />
         {carteGriseStatus === "checking" && (
           <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "18", borderColor: theme.primary + "60" }]}>
@@ -1125,6 +1138,7 @@ export default function DriverRegistrationScreen() {
           isScanning={carteGriseStatus === "checking"}
           scanSuccess={carteGriseStatus === "passed"}
           scanError={carteGriseStatus === "expired" || carteGriseStatus === "error"}
+          scanAnim={carteGriseScanAnim}
         />
       </ScrollView>
     </View>
