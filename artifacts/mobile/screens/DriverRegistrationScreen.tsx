@@ -939,12 +939,26 @@ export default function DriverRegistrationScreen() {
           </View>
         )}
 
-        <DocumentUploadCard label={t("cinBack")} documentKey="cinBack" icon="credit-card" />
+        <DocumentUploadCard
+          label={t("cinBack")}
+          documentKey="cinBack"
+          icon="credit-card"
+          isScanning={cinCheckStatus === "checking"}
+          scanSuccess={cinCheckStatus === "passed"}
+          scanError={cinCheckStatus === "mismatch" || cinCheckStatus === "expired" || cinCheckStatus === "underage" || cinCheckStatus === "both_failed"}
+        />
 
         <ThemedText type="label" style={[styles.documentSectionTitle, { color: theme.textSecondary, marginTop: Spacing.lg }]}>
           {t("drivingLicenseSection")}
         </ThemedText>
-        <DocumentUploadCard label={t("drivingLicenseFront")} documentKey="drivingLicenseFront" icon="award" />
+        <DocumentUploadCard
+          label={t("drivingLicenseFront")}
+          documentKey="drivingLicenseFront"
+          icon="award"
+          isScanning={licenseFrontStatus === "checking"}
+          scanSuccess={licenseFrontStatus === "passed"}
+          scanError={licenseFrontStatus === "mismatch" || licenseFrontStatus === "error"}
+        />
         {licenseFrontStatus === "checking" && (
           <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "18", borderColor: theme.primary + "60" }]}>
             <ActivityIndicator size="small" color={theme.primary} />
@@ -992,7 +1006,14 @@ export default function DriverRegistrationScreen() {
           </View>
         )}
 
-        <DocumentUploadCard label={t("drivingLicenseBack")} documentKey="drivingLicenseBack" icon="award" />
+        <DocumentUploadCard
+          label={t("drivingLicenseBack")}
+          documentKey="drivingLicenseBack"
+          icon="award"
+          isScanning={licenseBackStatus === "checking"}
+          scanSuccess={licenseBackStatus === "passed"}
+          scanError={licenseBackStatus === "expired" || licenseBackStatus === "error"}
+        />
         {licenseBackStatus === "checking" && (
           <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "18", borderColor: theme.primary + "60" }]}>
             <ActivityIndicator size="small" color={theme.primary} />
@@ -1043,7 +1064,14 @@ export default function DriverRegistrationScreen() {
         <ThemedText type="label" style={[styles.documentSectionTitle, { color: theme.textSecondary, marginTop: Spacing.lg }]}>
           {t("vehicleRegistrationSection")}
         </ThemedText>
-        <DocumentUploadCard label={t("vehicleRegistrationFront")} documentKey="vehicleRegistrationFront" icon="truck" />
+        <DocumentUploadCard
+          label={t("vehicleRegistrationFront")}
+          documentKey="vehicleRegistrationFront"
+          icon="truck"
+          isScanning={carteGriseStatus === "checking"}
+          scanSuccess={carteGriseStatus === "passed"}
+          scanError={carteGriseStatus === "expired" || carteGriseStatus === "error"}
+        />
         {carteGriseStatus === "checking" && (
           <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "18", borderColor: theme.primary + "60" }]}>
             <ActivityIndicator size="small" color={theme.primary} />
@@ -1090,7 +1118,14 @@ export default function DriverRegistrationScreen() {
             </ThemedText>
           </View>
         )}
-        <DocumentUploadCard label={t("vehicleRegistrationBack")} documentKey="vehicleRegistrationBack" icon="truck" />
+        <DocumentUploadCard
+          label={t("vehicleRegistrationBack")}
+          documentKey="vehicleRegistrationBack"
+          icon="truck"
+          isScanning={carteGriseStatus === "checking"}
+          scanSuccess={carteGriseStatus === "passed"}
+          scanError={carteGriseStatus === "expired" || carteGriseStatus === "error"}
+        />
       </ScrollView>
     </View>
   );
