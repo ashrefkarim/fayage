@@ -6,3 +6,9 @@ id = "eCMOZcWURcGZyRYzZ4GZS"
 uri = "file://politique_confidentialite_fayage.txt"
 type = "text"
 title = "Politique de confidentialité FAYAGE — version améliorée"
+
+[[outputs]]
+id = "T-ASCs7U0KXkCTM8gcLnu"
+uri = "file://conditions_generales_fayage.txt"
+type = "text"
+title = "Conditions Générales d'Utilisation FAYAGE — version améliorée"
