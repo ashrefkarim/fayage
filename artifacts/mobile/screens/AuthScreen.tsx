@@ -295,7 +295,7 @@ export default function AuthScreen() {
           style={styles.logoGradient}
         >
           <Image
-            source={appLogo && !logoLoadError ? { uri: appLogo } : require("../assets/images/icon.png")}
+            source={appLogo && !logoLoadError ? { uri: appLogo } : require("../assets/images/logo-transparent.png")}
             style={styles.logo}
             resizeMode="contain"
             onError={() => setLogoLoadError(true)}
