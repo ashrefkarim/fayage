@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { View, StyleSheet, Pressable, Image, ScrollView, Alert, Platform, ActivityIndicator, Animated } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -35,7 +35,6 @@ interface FormErrors {
   drivingLicenseBack?: string;
   vehicleRegistrationFront?: string;
   vehicleRegistrationBack?: string;
-  vehicleInsurance?: string;
 }
 
 interface AiWarning {
@@ -77,6 +76,7 @@ export default function DriverRegistrationScreen() {
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const cinScanAnim = useRef(new Animated.Value(0)).current;
 
   const animateStep = (fn: () => void, direction: 1 | -1 = 1) => {
     Animated.parallel([
@@ -94,6 +94,20 @@ export default function DriverRegistrationScreen() {
   const [isAiVerifying, setIsAiVerifying] = useState(false);
   const [aiWarnings, setAiWarnings] = useState<AiWarning[]>([]);
   const [cinCheckStatus, setCinCheckStatus] = useState<"idle" | "checking" | "passed" | "mismatch" | "expired" | "underage" | "both_failed" | "error">("idle");
+
+  useEffect(() => {
+    if (cinCheckStatus === "checking") {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(cinScanAnim, { toValue: 1, duration: 1600, useNativeDriver: true }),
+          Animated.timing(cinScanAnim, { toValue: 0, duration: 1600, useNativeDriver: true }),
+        ])
+      ).start();
+    } else {
+      cinScanAnim.stopAnimation();
+      cinScanAnim.setValue(0);
+    }
+  }, [cinCheckStatus]);
   const [cinCheckDetail, setCinCheckDetail] = useState<{ fr: string; ar: string } | null>(null);
   const [cinExtracted, setCinExtracted] = useState<{ number: string | null; expiryDate: string | null; dateOfBirth: string | null } | null>(null);
 
@@ -194,7 +208,6 @@ export default function DriverRegistrationScreen() {
     if (!documents.drivingLicenseBack) newErrors.drivingLicenseBack = t("requiredField");
     if (!documents.vehicleRegistrationFront) newErrors.vehicleRegistrationFront = t("requiredField");
     if (!documents.vehicleRegistrationBack) newErrors.vehicleRegistrationBack = t("requiredField");
-    if (!documents.vehicleInsurance) newErrors.vehicleInsurance = t("requiredField");
 
     if (documents.cinFront && cinCheckStatus === "checking") {
       newErrors.cinFront = language === "ar" ? "جارٍ التحقق من البطاقة..." : "Vérification de la CIN en cours...";
@@ -640,13 +653,23 @@ export default function DriverRegistrationScreen() {
     label,
     documentKey,
     icon,
+    isScanning = false,
+    scanSuccess = false,
+    scanError = false,
   }: {
     label: string;
     documentKey: keyof DriverDocuments;
     icon: IconName;
+    isScanning?: boolean;
+    scanSuccess?: boolean;
+    scanError?: boolean;
   }) => {
     const hasDocument = !!documents[documentKey];
     const hasError = !!errors[documentKey];
+
+    const badgeColor = isScanning ? theme.primary : scanSuccess ? theme.success : theme.success;
+    const badgeIcon = isScanning ? "loader" : "check-circle";
+
     return (
       <View style={styles.documentCard}>
         <View style={[styles.documentHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
@@ -657,10 +680,12 @@ export default function DriverRegistrationScreen() {
             <ThemedText style={styles.documentLabel}>{label}</ThemedText>
           </View>
           {hasDocument ? (
-            <View style={[styles.uploadedBadge, { backgroundColor: theme.success + "15" }]}>
-              <Icon name="check-circle" size={14} color={theme.success} />
-              <ThemedText style={[styles.uploadedText, { color: theme.success }]}>
-                {t("photoUploaded")}
+            <View style={[styles.uploadedBadge, { backgroundColor: badgeColor + "15" }]}>
+              <Icon name={badgeIcon} size={14} color={badgeColor} />
+              <ThemedText style={[styles.uploadedText, { color: badgeColor }]}>
+                {isScanning
+                  ? (language === "ar" ? "جارٍ المسح..." : "Scan...")
+                  : t("photoUploaded")}
               </ThemedText>
             </View>
           ) : null}
@@ -672,6 +697,52 @@ export default function DriverRegistrationScreen() {
               style={styles.previewImage}
               resizeMode="cover"
             />
+            {/* Scanning animation overlay */}
+            {isScanning && (
+              <View style={[StyleSheet.absoluteFill, { overflow: "hidden", borderRadius: 10 }]}>
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(37,99,235,0.08)" }]} />
+                {/* Scan line */}
+                <Animated.View
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    height: 3,
+                    backgroundColor: "#3B82F6",
+                    shadowColor: "#3B82F6",
+                    shadowOpacity: 1,
+                    shadowRadius: 8,
+                    transform: [{
+                      translateY: cinScanAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 140],
+                      }),
+                    }],
+                  }}
+                />
+                {/* Corner brackets */}
+                <View style={{ position: "absolute", top: 8, left: 8, width: 20, height: 20, borderTopWidth: 3, borderLeftWidth: 3, borderColor: "#3B82F6", borderRadius: 2 }} />
+                <View style={{ position: "absolute", top: 8, right: 8, width: 20, height: 20, borderTopWidth: 3, borderRightWidth: 3, borderColor: "#3B82F6", borderRadius: 2 }} />
+                <View style={{ position: "absolute", bottom: 8, left: 8, width: 20, height: 20, borderBottomWidth: 3, borderLeftWidth: 3, borderColor: "#3B82F6", borderRadius: 2 }} />
+                <View style={{ position: "absolute", bottom: 8, right: 8, width: 20, height: 20, borderBottomWidth: 3, borderRightWidth: 3, borderColor: "#3B82F6", borderRadius: 2 }} />
+              </View>
+            )}
+            {/* Success overlay */}
+            {scanSuccess && !isScanning && (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(5,150,105,0.15)", borderRadius: 10, alignItems: "center", justifyContent: "center" }]}>
+                <View style={{ backgroundColor: theme.success, borderRadius: 30, padding: 10 }}>
+                  <Icon name="check" size={28} color="#fff" />
+                </View>
+              </View>
+            )}
+            {/* Error overlay */}
+            {scanError && !isScanning && (
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(220,38,38,0.15)", borderRadius: 10, alignItems: "center", justifyContent: "center" }]}>
+                <View style={{ backgroundColor: theme.error, borderRadius: 30, padding: 10 }}>
+                  <Icon name="x" size={28} color="#fff" />
+                </View>
+              </View>
+            )}
             <Pressable
               onPress={() => showImagePickerOptions(documentKey)}
               style={[styles.changeButton, { backgroundColor: theme.backgroundSecondary }]}
@@ -789,7 +860,14 @@ export default function DriverRegistrationScreen() {
         <ThemedText type="label" style={[styles.documentSectionTitle, { color: theme.textSecondary }]}>
           {t("cinSection")}
         </ThemedText>
-        <DocumentUploadCard label={t("cinFront")} documentKey="cinFront" icon="credit-card" />
+        <DocumentUploadCard
+          label={t("cinFront")}
+          documentKey="cinFront"
+          icon="credit-card"
+          isScanning={cinCheckStatus === "checking"}
+          scanSuccess={cinCheckStatus === "passed"}
+          scanError={cinCheckStatus === "mismatch" || cinCheckStatus === "expired" || cinCheckStatus === "underage" || cinCheckStatus === "both_failed"}
+        />
 
         {cinCheckStatus === "checking" && (
           <View style={[styles.cinStatusBanner, { backgroundColor: theme.primary + "18", borderColor: theme.primary + "60" }]}>
@@ -1013,7 +1091,6 @@ export default function DriverRegistrationScreen() {
           </View>
         )}
         <DocumentUploadCard label={t("vehicleRegistrationBack")} documentKey="vehicleRegistrationBack" icon="truck" />
-        <DocumentUploadCard label={t("vehicleInsurance")} documentKey="vehicleInsurance" icon="shield" />
       </ScrollView>
     </View>
   );
