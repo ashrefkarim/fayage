@@ -48,9 +48,7 @@ export default function CreateRequestScreen() {
   const [favoriteDrivers, setFavoriteDrivers] = useState<any[]>([]);
   const [selectedDriverId, setSelectedDriverId] = useState<string | undefined>();
   const [showDriverPicker, setShowDriverPicker] = useState(false);
-  const [cashPayment, setCashPayment] = useState(true);
   const [viaCashPlusWafaCash, setViaCashPlusWafaCash] = useState(false);
-  const [paymentUndertaking, setPaymentUndertaking] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [mapPickerTarget, setMapPickerTarget] = useState<"pickup" | "delivery" | null>(null);
 
@@ -143,7 +141,7 @@ export default function CreateRequestScreen() {
 
 
   const canProceedToConfirmation = () => {
-    return pickupAddress && deliveryAddress && goodsDescription && paymentUndertaking && clientPrice.trim() !== "" && parseInt(clientPrice) > 0;
+    return pickupAddress && deliveryAddress && goodsDescription && clientPrice.trim() !== "" && parseInt(clientPrice) > 0;
   };
 
   const handleProceedToConfirmation = async () => {
@@ -520,20 +518,6 @@ export default function CreateRequestScreen() {
       {/* ─── 7. Paiement ─── */}
       <SectionChip num="7" icon="credit-card" label={t("paymentMethod")} color="#10B981" />
       <View style={[styles.card, { backgroundColor: theme.backgroundDefault, gap: Spacing.md }]}>
-        {/* Cash option */}
-        <Pressable
-          onPress={() => setCashPayment(!cashPayment)}
-          style={[styles.paymentPill, { backgroundColor: cashPayment ? "#10B98115" : theme.backgroundSecondary, borderColor: cashPayment ? "#10B981" : "transparent" }]}
-        >
-          <View style={[styles.optionIconBox, { backgroundColor: "#10B98115" }]}>
-            <Icon name="banknote" size={20} color="#10B981" />
-          </View>
-          <ThemedText style={[styles.optionTitle, { flex: 1 }]}>{t("cashToDriver")}</ThemedText>
-          <View style={[styles.radioCircle, { borderColor: cashPayment ? "#10B981" : theme.border }]}>
-            {cashPayment ? <View style={[styles.radioDot, { backgroundColor: "#10B981" }]} /> : null}
-          </View>
-        </Pressable>
-
         {/* CashPlus / WafaCash checkbox */}
         <Pressable
           onPress={() => setViaCashPlusWafaCash(!viaCashPlusWafaCash)}
@@ -551,26 +535,6 @@ export default function CreateRequestScreen() {
             </ThemedText>
           </View>
         </Pressable>
-
-        {/* Undertaking */}
-        <Pressable
-          onPress={() => setPaymentUndertaking(!paymentUndertaking)}
-          style={[styles.undertakingBox, { backgroundColor: paymentUndertaking ? "#10B98108" : theme.backgroundSecondary, borderColor: paymentUndertaking ? "#10B981" : theme.border }]}
-        >
-          <View style={[styles.undertakingCheck, { borderColor: paymentUndertaking ? "#10B981" : theme.border, backgroundColor: paymentUndertaking ? "#10B981" : "transparent" }]}>
-            {paymentUndertaking ? <Icon name="check" size={13} color="#FFFFFF" /> : null}
-          </View>
-          <ThemedText style={[styles.undertakingText, { color: paymentUndertaking ? theme.text : theme.textSecondary }]}>
-            {t("paymentUndertaking")}
-          </ThemedText>
-        </Pressable>
-
-        {!paymentUndertaking ? (
-          <View style={styles.errorRow}>
-            <Icon name="alert-circle" size={14} color={theme.error} />
-            <ThemedText style={[styles.errorText, { color: theme.error }]}>{t("undertakingRequired")}</ThemedText>
-          </View>
-        ) : null}
       </View>
 
       {/* ─── CTA ─── */}
