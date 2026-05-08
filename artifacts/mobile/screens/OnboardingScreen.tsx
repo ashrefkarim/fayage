@@ -1,12 +1,12 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import {
   View,
   StyleSheet,
-  FlatList,
   Dimensions,
   Pressable,
   StatusBar,
-  ListRenderItemInfo,
+  Animated,
+  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,7 +17,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 export const ONBOARDING_SEEN_KEY = "@fayage/onboarding_seen";
 
 interface Slide {
@@ -25,7 +25,9 @@ interface Slide {
   emoji: string;
   titleKey: string;
   subtitleKey: string;
-  colors: [string, string];
+  bg: string;
+  accent: string;
+  ringColor: string;
 }
 
 const SLIDES: Slide[] = [
@@ -34,30 +36,107 @@ const SLIDES: Slide[] = [
     emoji: "🚚",
     titleKey: "onboarding1Title",
     subtitleKey: "onboarding1Subtitle",
-    colors: ["#005BBB", "#0073E6"],
+    bg: "#0A1628",
+    accent: "#1E88E5",
+    ringColor: "#1565C0",
   },
   {
     key: "2",
     emoji: "📦",
     titleKey: "onboarding2Title",
     subtitleKey: "onboarding2Subtitle",
-    colors: ["#0073E6", "#0096FF"],
+    bg: "#0D1B2A",
+    accent: "#0288D1",
+    ringColor: "#01579B",
   },
   {
     key: "3",
     emoji: "📍",
     titleKey: "onboarding3Title",
     subtitleKey: "onboarding3Subtitle",
-    colors: ["#0066CC", "#00AAFF"],
+    bg: "#0F0A1E",
+    accent: "#5C6BC0",
+    ringColor: "#283593",
   },
 ];
+
+const CARD_HEIGHT = height * 0.46;
+const VISUAL_HEIGHT = height - CARD_HEIGHT;
 
 export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const { t, isRTL } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const flatListRef = useRef<FlatList<Slide>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Animations
+  const bgAnim = useRef(new Animated.Value(0)).current;
+  const cardOpacity = useRef(new Animated.Value(1)).current;
+  const cardTranslate = useRef(new Animated.Value(0)).current;
+  const emojiScale = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const ring1 = useRef(new Animated.Value(0)).current;
+  const ring2 = useRef(new Animated.Value(0)).current;
+
+  // Pulsing ring animation
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.08, duration: 1600, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 1600, useNativeDriver: true }),
+      ])
+    );
+    const ripple1 = Animated.loop(
+      Animated.sequence([
+        Animated.timing(ring1, { toValue: 1, duration: 2400, useNativeDriver: true }),
+        Animated.timing(ring1, { toValue: 0, duration: 0, useNativeDriver: true }),
+      ])
+    );
+    const ripple2 = Animated.loop(
+      Animated.sequence([
+        Animated.delay(800),
+        Animated.timing(ring2, { toValue: 1, duration: 2400, useNativeDriver: true }),
+        Animated.timing(ring2, { toValue: 0, duration: 0, useNativeDriver: true }),
+      ])
+    );
+    pulse.start();
+    ripple1.start();
+    ripple2.start();
+    return () => { pulse.stop(); ripple1.stop(); ripple2.stop(); };
+  }, []);
+
+  const transitionTo = useCallback(
+    (nextIndex: number) => {
+      Animated.parallel([
+        Animated.timing(cardOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
+        Animated.timing(cardTranslate, {
+          toValue: isRTL ? 40 : -40,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(emojiScale, { toValue: 0.6, duration: 200, useNativeDriver: true }),
+      ]).start(() => {
+        setCurrentIndex(nextIndex);
+        cardTranslate.setValue(isRTL ? -40 : 40);
+        Animated.parallel([
+          Animated.timing(cardOpacity, { toValue: 1, duration: 280, useNativeDriver: true }),
+          Animated.spring(cardTranslate, {
+            toValue: 0,
+            friction: 7,
+            tension: 60,
+            useNativeDriver: true,
+          }),
+          Animated.spring(emojiScale, {
+            toValue: 1,
+            friction: 5,
+            tension: 80,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      });
+    },
+    [isRTL, cardOpacity, cardTranslate, emojiScale]
+  );
 
   const finish = useCallback(async () => {
     await AsyncStorage.setItem(ONBOARDING_SEEN_KEY, "true");
@@ -66,171 +145,327 @@ export default function OnboardingScreen() {
 
   const handleNext = useCallback(() => {
     if (currentIndex < SLIDES.length - 1) {
-      const next = currentIndex + 1;
-      flatListRef.current?.scrollToIndex({ index: next, animated: true });
-      setCurrentIndex(next);
+      transitionTo(currentIndex + 1);
     } else {
       finish();
     }
-  }, [currentIndex, finish]);
-
-  const onViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: Array<{ index: number | null }> }) => {
-      if (viewableItems.length > 0 && viewableItems[0].index !== null) {
-        setCurrentIndex(viewableItems[0].index);
-      }
-    }
-  ).current;
-
-  const renderSlide = ({ item }: ListRenderItemInfo<Slide>) => (
-    <LinearGradient colors={item.colors} style={styles.slide}>
-      <View style={styles.slideInner}>
-        <View style={styles.emojiRing}>
-          <ThemedText style={styles.emoji}>{item.emoji}</ThemedText>
-        </View>
-        <ThemedText style={[styles.title, { textAlign: isRTL ? "right" : "center" }]}>
-          {t(item.titleKey)}
-        </ThemedText>
-        <ThemedText style={[styles.subtitle, { textAlign: isRTL ? "right" : "center" }]}>
-          {t(item.subtitleKey)}
-        </ThemedText>
-      </View>
-    </LinearGradient>
-  );
+  }, [currentIndex, transitionTo, finish]);
 
   const isLast = currentIndex === SLIDES.length - 1;
+  const slide = SLIDES[currentIndex];
+
+  const ring1Opacity = ring1.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.5, 0.3, 0] });
+  const ring1Scale = ring1.interpolate({ inputRange: [0, 1], outputRange: [1, 1.9] });
+  const ring2Opacity = ring2.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.4, 0.2, 0] });
+  const ring2Scale = ring2.interpolate({ inputRange: [0, 1], outputRange: [1, 1.9] });
 
   return (
-    <View style={styles.container}>
+    <View style={styles.root}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Skip */}
-      {!isLast && (
-        <Pressable
-          onPress={finish}
-          hitSlop={12}
-          style={[
-            styles.skipBtn,
-            { top: insets.top + 16 },
-            isRTL ? { left: 24 } : { right: 24 },
-          ]}
-        >
-          <ThemedText style={styles.skipText}>{t("skip")}</ThemedText>
-        </Pressable>
-      )}
+      {/* ── Background ── */}
+      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: slide.bg }]} />
 
-      {/* Slides */}
-      <FlatList
-        ref={flatListRef}
-        data={SLIDES}
-        renderItem={renderSlide}
-        keyExtractor={(item) => item.key}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
-        style={styles.list}
-      />
+      {/* ── Decorative blobs ── */}
+      <View style={[styles.blob, styles.blobTL, { backgroundColor: slide.accent, opacity: 0.18 }]} />
+      <View style={[styles.blob, styles.blobBR, { backgroundColor: slide.ringColor, opacity: 0.14 }]} />
 
-      {/* Bottom sheet */}
-      <View style={[styles.bottom, { paddingBottom: insets.bottom + 28 }]}>
-        {/* Page dots */}
-        <View style={styles.dots}>
+      {/* ── Visual zone ── */}
+      <View style={[styles.visualZone, { height: VISUAL_HEIGHT, paddingTop: insets.top + 12 }]}>
+        {/* Skip */}
+        {!isLast && (
+          <Pressable
+            onPress={finish}
+            hitSlop={16}
+            style={[styles.skipBtn, isRTL ? { left: 28 } : { right: 28 }]}
+          >
+            <ThemedText style={styles.skipText}>{t("skip")}</ThemedText>
+          </Pressable>
+        )}
+
+        {/* Step counter */}
+        <View style={styles.stepCounter}>
           {SLIDES.map((_, i) => (
             <View
               key={i}
-              style={[styles.dot, i === currentIndex ? styles.dotOn : styles.dotOff]}
+              style={[
+                styles.stepDot,
+                {
+                  backgroundColor:
+                    i === currentIndex
+                      ? "#FFFFFF"
+                      : "rgba(255,255,255,0.25)",
+                  width: i === currentIndex ? 28 : 8,
+                },
+              ]}
             />
           ))}
         </View>
 
-        {/* CTA button */}
+        {/* Emoji + ripple rings */}
+        <View style={styles.emojiContainer}>
+          {/* Ripple ring 1 */}
+          <Animated.View
+            style={[
+              styles.rippleRing,
+              {
+                borderColor: slide.accent,
+                opacity: ring1Opacity,
+                transform: [{ scale: ring1Scale }],
+              },
+            ]}
+          />
+          {/* Ripple ring 2 */}
+          <Animated.View
+            style={[
+              styles.rippleRing,
+              {
+                borderColor: slide.accent,
+                opacity: ring2Opacity,
+                transform: [{ scale: ring2Scale }],
+              },
+            ]}
+          />
+          {/* Static outer ring */}
+          <View style={[styles.outerRing, { borderColor: `${slide.accent}40` }]} />
+          {/* Static mid ring */}
+          <View style={[styles.midRing, { borderColor: `${slide.accent}70` }]} />
+          {/* Pulsing emoji disc */}
+          <Animated.View
+            style={[
+              styles.emojiDisc,
+              { backgroundColor: slide.accent, transform: [{ scale: pulseAnim }] },
+            ]}
+          >
+            <Animated.Text
+              style={[styles.emoji, { transform: [{ scale: emojiScale }] }]}
+            >
+              {slide.emoji}
+            </Animated.Text>
+          </Animated.View>
+        </View>
+      </View>
+
+      {/* ── Bottom card ── */}
+      <View style={[styles.card, { paddingBottom: insets.bottom + 32 }]}>
+        {/* Card top notch */}
+        <View style={[styles.cardNotch, { backgroundColor: slide.accent }]} />
+
+        <Animated.View
+          style={{
+            opacity: cardOpacity,
+            transform: [{ translateX: cardTranslate }],
+            flex: 1,
+          }}
+        >
+          <View style={styles.cardContent}>
+            <ThemedText
+              style={[styles.title, { textAlign: isRTL ? "right" : "left" }]}
+              numberOfLines={2}
+            >
+              {t(slide.titleKey)}
+            </ThemedText>
+            <ThemedText
+              style={[styles.subtitle, { textAlign: isRTL ? "right" : "left" }]}
+              numberOfLines={4}
+            >
+              {t(slide.subtitleKey)}
+            </ThemedText>
+          </View>
+        </Animated.View>
+
+        {/* CTA */}
         <Pressable
           onPress={handleNext}
-          style={({ pressed }) => [styles.cta, { opacity: pressed ? 0.85 : 1 }]}
+          style={({ pressed }) => [styles.ctaWrapper, { opacity: pressed ? 0.88 : 1 }]}
         >
-          <ThemedText style={styles.ctaText}>
-            {isLast ? t("getStarted") : t("next")}
-          </ThemedText>
+          <LinearGradient
+            colors={[slide.accent, slide.ringColor]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.cta}
+          >
+            <ThemedText style={styles.ctaText}>
+              {isLast ? t("getStarted") : t("next")}
+            </ThemedText>
+            <ThemedText style={styles.ctaArrow}>
+              {isRTL ? "←" : "→"}
+            </ThemedText>
+          </LinearGradient>
         </Pressable>
       </View>
     </View>
   );
 }
 
+const DISC = 128;
+const RING_SIZE = DISC + 36;
+const OUTER_RING_SIZE = DISC + 80;
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0066CC" },
-  list: { flex: 1 },
-  slide: {
-    width,
-    flex: 1,
+  root: { flex: 1, backgroundColor: "#0A1628" },
+
+  // Blobs
+  blob: {
+    position: "absolute",
+    borderRadius: 999,
+  },
+  blobTL: {
+    width: 280,
+    height: 280,
+    top: -80,
+    left: -80,
+  },
+  blobBR: {
+    width: 220,
+    height: 220,
+    bottom: height * 0.44,
+    right: -60,
+  },
+
+  // Visual zone
+  visualZone: {
     alignItems: "center",
     justifyContent: "center",
-  },
-  slideInner: {
-    alignItems: "center",
-    paddingHorizontal: 40,
-    gap: 24,
-  },
-  emojiRing: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-    borderWidth: 2,
-    borderColor: "rgba(255,255,255,0.25)",
-  },
-  emoji: { fontSize: 64 },
-  title: {
-    color: "#FFFFFF",
-    fontSize: 26,
-    fontWeight: "700",
-    fontFamily: "Poppins_600SemiBold",
-  },
-  subtitle: {
-    color: "rgba(255,255,255,0.82)",
-    fontSize: 15,
-    lineHeight: 24,
   },
   skipBtn: {
     position: "absolute",
-    zIndex: 10,
-    paddingVertical: 8,
+    top: Platform.OS === "ios" ? 52 : 28,
+    paddingVertical: 6,
     paddingHorizontal: 4,
   },
   skipText: {
-    color: "rgba(255,255,255,0.72)",
-    fontSize: 15,
+    color: "rgba(255,255,255,0.55)",
+    fontSize: 14,
     fontWeight: "500",
+    letterSpacing: 0.3,
   },
-  bottom: {
-    backgroundColor: "#FFFFFF",
-    paddingTop: 28,
-    paddingHorizontal: 32,
-    gap: 24,
+  stepCounter: {
+    position: "absolute",
+    bottom: 32,
+    flexDirection: "row",
     alignItems: "center",
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    gap: 6,
   },
-  dots: { flexDirection: "row", gap: 8 },
-  dot: { height: 8, borderRadius: 4 },
-  dotOn: { width: 28, backgroundColor: "#0066CC" },
-  dotOff: { width: 8, backgroundColor: "#D1D5DB" },
+  stepDot: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#FFFFFF",
+  },
+  emojiContainer: {
+    width: OUTER_RING_SIZE,
+    height: OUTER_RING_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rippleRing: {
+    position: "absolute",
+    width: RING_SIZE,
+    height: RING_SIZE,
+    borderRadius: RING_SIZE / 2,
+    borderWidth: 1.5,
+  },
+  outerRing: {
+    position: "absolute",
+    width: OUTER_RING_SIZE,
+    height: OUTER_RING_SIZE,
+    borderRadius: OUTER_RING_SIZE / 2,
+    borderWidth: 1,
+  },
+  midRing: {
+    position: "absolute",
+    width: RING_SIZE,
+    height: RING_SIZE,
+    borderRadius: RING_SIZE / 2,
+    borderWidth: 1,
+  },
+  emojiDisc: {
+    width: DISC,
+    height: DISC,
+    borderRadius: DISC / 2,
+    alignItems: "center",
+    justifyContent: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.5,
+        shadowRadius: 20,
+      },
+      android: { elevation: 16 },
+    }),
+  },
+  emoji: {
+    fontSize: 58,
+    lineHeight: 70,
+  },
+
+  // Card
+  card: {
+    height: CARD_HEIGHT,
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    paddingHorizontal: 32,
+    paddingTop: 28,
+    gap: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.12,
+        shadowRadius: 16,
+      },
+      android: { elevation: 12 },
+    }),
+  },
+  cardNotch: {
+    alignSelf: "center",
+    width: 44,
+    height: 4,
+    borderRadius: 2,
+    marginBottom: 4,
+    opacity: 0.25,
+  },
+  cardContent: {
+    flex: 1,
+    gap: 12,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#0D1117",
+    letterSpacing: -0.5,
+    lineHeight: 33,
+    fontFamily: "Poppins_600SemiBold",
+  },
+  subtitle: {
+    fontSize: 15,
+    color: "#5C6B7A",
+    lineHeight: 24,
+  },
+  ctaWrapper: {
+    borderRadius: 100,
+    overflow: "hidden",
+  },
   cta: {
-    width: "100%",
-    backgroundColor: "#0066CC",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 18,
     borderRadius: 100,
-    alignItems: "center",
+    gap: 10,
   },
   ctaText: {
     color: "#FFFFFF",
     fontSize: 17,
     fontWeight: "700",
+    letterSpacing: 0.2,
     fontFamily: "Poppins_600SemiBold",
+  },
+  ctaArrow: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 18,
+    fontWeight: "600",
   },
 });
