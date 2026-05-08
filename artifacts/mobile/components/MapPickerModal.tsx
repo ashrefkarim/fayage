@@ -71,19 +71,27 @@ export default function MapPickerModal({
 
   const reverseGeocode = useCallback(async (lat: number, lng: number) => {
     setIsGeocoding(true);
-    try {
-      let result = "";
+    let result = "";
 
-      if (GOOGLE_KEY) {
+    // Try Google Geocoding API first (requires Geocoding API to be enabled)
+    if (GOOGLE_KEY) {
+      try {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_KEY}&language=fr`;
         const res = await fetch(url);
         const data = await res.json();
-        if (data.results && data.results[0]) {
+        if (data.status === "OK" && data.results && data.results[0]) {
           result = data.results[0].formatted_address
             .replace(", Maroc", "")
             .replace(", Morocco", "");
         }
-      } else {
+      } catch {
+        // Google failed — fall through to Nominatim
+      }
+    }
+
+    // Fall back to Nominatim (always available, no key needed)
+    if (!result) {
+      try {
         const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=fr`;
         const res = await fetch(url, {
           headers: { "User-Agent": "FAYAGE-App/1.0" },
@@ -92,17 +100,16 @@ export default function MapPickerModal({
         if (data && data.display_name) {
           const parts: string[] = data.display_name
             .split(", ")
-            .filter((p: string) => !["Maroc", "Morocco"].includes(p));
+            .filter((p: string) => !["Maroc", "Morocco", "المغرب"].includes(p));
           result = parts.slice(0, 4).join(", ");
         }
+      } catch {
+        // Nominatim also failed — coordinates will be used as fallback
       }
-
-      if (result) setAddress(result);
-    } catch {
-      // silent — coords still used as fallback
-    } finally {
-      setIsGeocoding(false);
     }
+
+    if (result) setAddress(result);
+    setIsGeocoding(false);
   }, []);
 
   const processCoords = useCallback(
