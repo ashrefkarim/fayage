@@ -1874,7 +1874,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isAvailable: true,
       });
 
-      broadcastToClients({ type: "LOCATION_UPDATE", userId, requestId, location, timestamp });
+      // Send targeted to the order's client for privacy & efficiency
+      let sentTargeted = false;
+      try {
+        const order = await storage.getOrderById(requestId);
+        if (order?.clientId) {
+          sendToUser(order.clientId, { type: "LOCATION_UPDATE", userId, requestId, location, timestamp });
+          sentTargeted = true;
+        }
+      } catch {
+        // fall through to broadcast
+      }
+      // Fallback: broadcast to all connected clients if targeted send failed
+      if (!sentTargeted) {
+        broadcastToClients({ type: "LOCATION_UPDATE", userId, requestId, location, timestamp });
+      }
 
       res.json({ success: true });
     } catch (error) {

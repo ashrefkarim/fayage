@@ -18,12 +18,11 @@ export function useLocationTracking({
   enabled = false,
   userId,
   requestId,
-  updateInterval = 5000,
+  updateInterval = 3000,
 }: UseLocationTrackingOptions) {
   const [currentLocation, setCurrentLocation] = useState<LocationCoordinates | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
 
   const sendLocationUpdate = useCallback(
@@ -42,8 +41,8 @@ export function useLocationTracking({
             timestamp: Date.now(),
           }),
         });
-      } catch (err) {
-        console.error("Failed to send location update:", err);
+      } catch {
+        // silent
       }
     },
     [userId, requestId]
@@ -64,7 +63,7 @@ export function useLocationTracking({
         {
           accuracy: Location.Accuracy.High,
           timeInterval: updateInterval,
-          distanceInterval: 10,
+          distanceInterval: 5,
         },
         (location) => {
           const coords: LocationCoordinates = {
@@ -75,7 +74,7 @@ export function useLocationTracking({
           sendLocationUpdate(coords);
         }
       );
-    } catch (err) {
+    } catch {
       setError("Failed to start location tracking");
       setIsTracking(false);
     }
@@ -117,7 +116,7 @@ export function useLocationTracking({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       };
-    } catch (err) {
+    } catch {
       setError("Failed to get current location");
       return null;
     }
@@ -133,13 +132,30 @@ export function useLocationTracking({
   };
 }
 
+function getWsUrl(): string {
+  const apiUrl = getApiUrl();
+  if (apiUrl.startsWith("https://")) {
+    return apiUrl.replace("https://", "wss://") + "/api/ws";
+  }
+  return apiUrl.replace("http://", "ws://") + "/api/ws";
+}
+
 export function useDriverLocationSubscription(requestId?: string) {
   const [driverLocation, setDriverLocation] = useState<LocationCoordinates | null>(null);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   useEffect(() => {
     if (!requestId) return;
 
+    // ─── HTTP fetch (initial + fallback polling every 3 s) ───────────────
     const fetchDriverLocation = async () => {
       try {
         const apiUrl = getApiUrl();
@@ -148,21 +164,73 @@ export function useDriverLocationSubscription(requestId?: string) {
         );
         if (response.ok) {
           const data = await response.json();
-          if (data.location) {
+          if (data.location && mountedRef.current) {
             setDriverLocation(data.location);
           }
         }
-      } catch (err) {
-        console.error("Failed to fetch driver location:", err);
+      } catch {
+        // silent
       }
     };
 
     fetchDriverLocation();
-    pollingRef.current = setInterval(fetchDriverLocation, 5000);
+    pollingRef.current = setInterval(fetchDriverLocation, 3000);
+
+    // ─── WebSocket – real-time updates ───────────────────────────────────
+    let ws: WebSocket | null = null;
+
+    const connectWs = () => {
+      if (!mountedRef.current) return;
+      try {
+        ws = new WebSocket(getWsUrl());
+        wsRef.current = ws;
+
+        ws.onopen = () => {
+          // Register as a read-only tracker so the server can route targeted msgs
+          ws?.send(
+            JSON.stringify({ type: "REGISTER_USER", userId: `tracker_${requestId}`, role: "client" })
+          );
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data as string);
+            if (
+              msg.type === "LOCATION_UPDATE" &&
+              msg.requestId === requestId &&
+              msg.location &&
+              mountedRef.current
+            ) {
+              setDriverLocation(msg.location);
+            }
+          } catch {
+            // silent
+          }
+        };
+
+        ws.onerror = () => {};
+
+        ws.onclose = () => {
+          wsRef.current = null;
+          // Reconnect after 4 s if still mounted
+          if (mountedRef.current) {
+            reconnectRef.current = setTimeout(connectWs, 4000);
+          }
+        };
+      } catch {
+        // WebSocket not supported or blocked — polling covers it
+      }
+    };
+
+    connectWs();
 
     return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      if (reconnectRef.current) clearTimeout(reconnectRef.current);
+      if (wsRef.current) {
+        wsRef.current.onclose = null; // prevent reconnect on intentional close
+        wsRef.current.close();
+        wsRef.current = null;
       }
     };
   }, [requestId]);
