@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Pressable,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -48,14 +49,24 @@ export default function MapPickerModal({
   );
   const [address, setAddress] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const geocodeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const readyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const center = initialCoords || MOROCCO_CENTER;
+  const webviewRef = useRef<WebView>(null);
 
   useEffect(() => {
     if (visible) {
       setCurrentCoords(initialCoords || MOROCCO_CENTER);
       setAddress("");
+      setMapReady(false);
+      readyTimerRef.current = setTimeout(() => setMapReady(true), 2000);
+    } else {
+      if (readyTimerRef.current) clearTimeout(readyTimerRef.current);
     }
+    return () => {
+      if (readyTimerRef.current) clearTimeout(readyTimerRef.current);
+    };
   }, [visible, initialCoords]);
 
   const reverseGeocode = useCallback(async (lat: number, lng: number) => {
@@ -88,34 +99,57 @@ export default function MapPickerModal({
 
       if (result) setAddress(result);
     } catch {
-      // silent
+      // silent — coords still used as fallback
     } finally {
       setIsGeocoding(false);
     }
   }, []);
 
+  const processCoords = useCallback(
+    (lat: number, lng: number) => {
+      const coords: Coords = { latitude: lat, longitude: lng };
+      setCurrentCoords(coords);
+      setMapReady(true);
+      if (geocodeTimeoutRef.current) clearTimeout(geocodeTimeoutRef.current);
+      geocodeTimeoutRef.current = setTimeout(() => {
+        reverseGeocode(lat, lng);
+      }, 700);
+    },
+    [reverseGeocode]
+  );
+
+  // Native WebView onMessage handler
   const handleMessage = useCallback(
     (event: { nativeEvent: { data: string } }) => {
       try {
         const data = JSON.parse(event.nativeEvent.data);
         if (typeof data.lat === "number" && typeof data.lng === "number") {
-          const coords: Coords = {
-            latitude: data.lat,
-            longitude: data.lng,
-          };
-          setCurrentCoords(coords);
-          if (geocodeTimeoutRef.current)
-            clearTimeout(geocodeTimeoutRef.current);
-          geocodeTimeoutRef.current = setTimeout(() => {
-            reverseGeocode(data.lat, data.lng);
-          }, 700);
+          processCoords(data.lat, data.lng);
         }
       } catch {
         // silent
       }
     },
-    [reverseGeocode]
+    [processCoords]
   );
+
+  // Web fallback: listen for postMessage from the iframe via window events
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+    const handler = (event: MessageEvent) => {
+      try {
+        const data =
+          typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        if (typeof data?.lat === "number" && typeof data?.lng === "number") {
+          processCoords(data.lat, data.lng);
+        }
+      } catch {
+        // silent
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [processCoords]);
 
   const handleConfirm = async () => {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -170,10 +204,24 @@ export default function MapPickerModal({
     var map=L.map('map',{zoomControl:true,attributionControl:false})
       .setView([${center.latitude},${center.longitude}],15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+
+    function sendMsg(payload){
+      try{
+        if(window.ReactNativeWebView&&window.ReactNativeWebView.postMessage){
+          window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+        } else {
+          window.parent.postMessage(JSON.stringify(payload),'*');
+        }
+      }catch(e){
+        try{ window.parent.postMessage(JSON.stringify(payload),'*'); }catch(_){}
+      }
+    }
+
     function sendCenter(){
       var c=map.getCenter();
-      window.ReactNativeWebView.postMessage(JSON.stringify({lat:c.lat,lng:c.lng}));
+      sendMsg({lat:c.lat,lng:c.lng});
     }
+
     map.on('movestart',function(){
       pin.style.transform='translate(-50%,-115%) scale(1.12)';
       shadow.style.transform='translate(-50%,10px) scaleX(0.7)';
@@ -185,12 +233,18 @@ export default function MapPickerModal({
       shadow.style.opacity='1';
       sendCenter();
     });
-    setTimeout(sendCenter,600);
+
+    // Send initial center once Leaflet tiles are ready
+    map.whenReady(function(){ setTimeout(sendCenter,400); });
   </script>
 </body>
 </html>`;
 
-  const canConfirm = address.length > 0;
+  // Confirm is enabled once the map is ready (timer or first coords received)
+  const canConfirm = mapReady;
+  const displayAddress = address || (mapReady && !isGeocoding
+    ? `${currentCoords.latitude.toFixed(5)}, ${currentCoords.longitude.toFixed(5)}`
+    : "");
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -219,7 +273,7 @@ export default function MapPickerModal({
             {
               backgroundColor: theme.backgroundDefault,
               shadowColor: "#000",
-              borderColor: theme.border,
+              borderColor: canConfirm ? theme.primary + "55" : theme.border,
             },
           ]}
         >
@@ -230,7 +284,7 @@ export default function MapPickerModal({
             <View style={styles.addressContent}>
               <ActivityIndicator size="small" color={theme.primary} />
               <ThemedText style={[styles.geocodingText, { color: theme.textSecondary }]}>
-                Recherche de l'adresse...
+                Recherche de l'adresse…
               </ThemedText>
             </View>
           ) : (
@@ -238,13 +292,13 @@ export default function MapPickerModal({
               style={[
                 styles.addressText,
                 {
-                  color: address ? theme.text : theme.textSecondary,
+                  color: displayAddress ? theme.text : theme.textSecondary,
                   textAlign: isRTL ? "right" : "left",
                 },
               ]}
               numberOfLines={2}
             >
-              {address || "Déplacez la carte pour choisir un lieu…"}
+              {displayAddress || "Déplacez la carte pour choisir un lieu…"}
             </ThemedText>
           )}
         </View>
@@ -252,11 +306,13 @@ export default function MapPickerModal({
         {/* Map */}
         <View style={styles.mapContainer}>
           <WebView
+            ref={webviewRef}
             source={{ html: mapHtml }}
             style={styles.map}
             onMessage={handleMessage}
             javaScriptEnabled
             domStorageEnabled
+            originWhitelist={["*"]}
             startInLoadingState
             renderLoading={() => (
               <View
@@ -298,14 +354,18 @@ export default function MapPickerModal({
             ]}
           >
             <LinearGradient
-              colors={canConfirm ? [theme.primary, (theme as any).primaryLight || theme.primary + "CC"] : ["#9CA3AF", "#9CA3AF"]}
+              colors={
+                canConfirm
+                  ? [theme.primary, (theme as any).primaryLight || theme.primary + "CC"]
+                  : ["#9CA3AF", "#9CA3AF"]
+              }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.confirmBtnGradient}
             >
-              <Icon name="map-pin" size={20} color="#FFFFFF" />
+              <Icon name="check-circle" size={20} color="#FFFFFF" />
               <ThemedText style={styles.confirmBtnText}>
-                {canConfirm ? "Confirmer ce lieu" : "Déplacez la carte…"}
+                {canConfirm ? "Confirmer ce lieu" : "Chargement de la carte…"}
               </ThemedText>
             </LinearGradient>
           </Pressable>
@@ -343,7 +403,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.lg,
     marginVertical: Spacing.sm,
     borderRadius: BorderRadius.lg,
-    borderWidth: 1,
+    borderWidth: 1.5,
     padding: Spacing.md,
     minHeight: 60,
     shadowOffset: { width: 0, height: 2 },
