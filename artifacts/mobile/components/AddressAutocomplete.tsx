@@ -159,29 +159,55 @@ export function AddressAutocomplete({
         accuracy: Location.Accuracy.Balanced,
       });
 
-      let address = t("currentLocation");
+      let address = "";
+      const { latitude, longitude } = location.coords;
 
+      // 1) Try Google Geocoding API
       if (GOOGLE_KEY) {
-        const { latitude, longitude } = location.coords;
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_KEY}&language=fr`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data.results?.[0]) {
-          address = data.results[0].formatted_address
-            .replace(", Maroc", "")
-            .replace(", Morocco", "");
-        }
-      } else {
-        const [geo] = await Location.reverseGeocodeAsync({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        });
-        if (geo) {
-          address = [geo.street, geo.district, geo.city]
-            .filter(Boolean)
-            .join(", ") || t("currentLocation");
+        try {
+          const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_KEY}&language=fr`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (data.status === "OK" && data.results?.[0]) {
+            address = data.results[0].formatted_address
+              .replace(", Maroc", "")
+              .replace(", Morocco", "");
+          }
+        } catch {
+          // fall through
         }
       }
+
+      // 2) Nominatim fallback (no key needed)
+      if (!address) {
+        try {
+          const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=fr`;
+          const res = await fetch(url, { headers: { "User-Agent": "FAYAGE-App/1.0" } });
+          const data = await res.json();
+          if (data?.display_name) {
+            const parts: string[] = data.display_name
+              .split(", ")
+              .filter((p: string) => !["Maroc", "Morocco", "المغرب"].includes(p));
+            address = parts.slice(0, 4).join(", ");
+          }
+        } catch {
+          // fall through
+        }
+      }
+
+      // 3) Device geocoder fallback
+      if (!address) {
+        try {
+          const [geo] = await Location.reverseGeocodeAsync({ latitude, longitude });
+          if (geo) {
+            address = [geo.street, geo.district, geo.city].filter(Boolean).join(", ");
+          }
+        } catch {
+          // fall through
+        }
+      }
+
+      if (!address) address = t("currentLocation");
 
       onChangeText(address);
       onSelectAddress(address, {
