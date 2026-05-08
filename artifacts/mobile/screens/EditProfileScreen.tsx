@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Image, Pressable, Platform } from "react-native";
+import { View, StyleSheet, Image, Pressable, Platform, Alert } from "react-native";
 import PermissionModal from "@/components/PermissionModal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderPadding } from "@/hooks/useHeaderPadding";
@@ -35,7 +35,7 @@ export default function EditProfileScreen() {
   const navigation = useNavigation();
   const { theme } = useTheme();
   const { t, isRTL, language } = useLanguage();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, deleteAccount } = useAuth();
 
   const [editMode, setEditMode] = useState<EditMode>("profile");
   const [isLoading, setIsLoading] = useState(false);
@@ -54,6 +54,31 @@ export default function EditProfileScreen() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [permissionModalVisible, setPermissionModalVisible] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      t("deleteAccount"),
+      t("deleteAccountWarning"),
+      [
+        { text: t("no"), style: "cancel" },
+        {
+          text: t("deleteAccount"),
+          style: "destructive",
+          onPress: async () => {
+            setIsDeletingAccount(true);
+            try {
+              await deleteAccount();
+            } catch {
+              Alert.alert("Erreur", "Impossible de supprimer le compte. Réessayez.");
+            } finally {
+              setIsDeletingAccount(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const pickProfilePicture = async () => {
     try {
@@ -375,6 +400,28 @@ export default function EditProfileScreen() {
         {editMode === "email" && renderEmailEdit()}
         {editMode === "password" && renderPasswordEdit()}
       </View>
+      {/* ── Danger Zone ── */}
+      <View style={[styles.dangerSection, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
+        <View style={[styles.dangerHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+          <Icon name="alert-triangle" size={18} color="#DC2626" />
+          <ThemedText style={styles.dangerTitle}>{t("dangerZone")}</ThemedText>
+        </View>
+        <ThemedText style={styles.dangerWarningText}>{t("deleteAccountWarning")}</ThemedText>
+        <Pressable
+          onPress={handleDeleteAccount}
+          disabled={isDeletingAccount}
+          style={({ pressed }) => [
+            styles.deleteBtn,
+            { opacity: isDeletingAccount || pressed ? 0.7 : 1 },
+          ]}
+        >
+          <Icon name="trash-2" size={16} color="#FFFFFF" />
+          <ThemedText style={styles.deleteBtnText}>
+            {isDeletingAccount ? t("deleting") : t("deleteAccount")}
+          </ThemedText>
+        </Pressable>
+      </View>
+
       <PermissionModal
         visible={permissionModalVisible}
         type="gallery"
@@ -453,5 +500,43 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: Spacing.md,
+  },
+  dangerSection: {
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+  },
+  dangerHeader: {
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  dangerTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#DC2626",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  dangerWarningText: {
+    fontSize: 13,
+    color: "#6B7280",
+    lineHeight: 20,
+  },
+  deleteBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.sm,
+    backgroundColor: "#DC2626",
+    paddingVertical: 12,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.full,
+    marginTop: Spacing.sm,
+  },
+  deleteBtnText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import OnboardingScreen, { ONBOARDING_SEEN_KEY } from "@/screens/OnboardingScreen";
 import AuthScreen from "@/screens/AuthScreen";
 import DriverRegistrationScreen from "@/screens/DriverRegistrationScreen";
 import ForgotPasswordScreen from "@/screens/ForgotPasswordScreen";
@@ -25,6 +28,7 @@ import VoiceCallScreen from "@/screens/VoiceCallScreen";
 import PaymentInstructionsScreen from "@/screens/client/PaymentInstructionsScreen";
 
 export type RootStackParamList = {
+  Onboarding: undefined;
   Auth: undefined;
   DriverRegistration: undefined;
   ForgotPassword: undefined;
@@ -68,8 +72,21 @@ export default function RootStackNavigator() {
   const screenOptions = useScreenOptions();
   const { user, isLoading, isAuthenticated } = useAuth();
   const { t } = useLanguage();
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
 
-  if (isLoading) {
+  useEffect(() => {
+    AsyncStorage.getItem(ONBOARDING_SEEN_KEY)
+      .then((val) => setHasSeenOnboarding(val === "true"))
+      .catch(() => setHasSeenOnboarding(true));
+  }, []);
+
+  // Register push notifications when the user is logged in
+  usePushNotifications({
+    userId: user?.id,
+    userType: user?.role === "admin" ? undefined : (user?.role as "client" | "driver" | undefined),
+  });
+
+  if (isLoading || hasSeenOnboarding === null) {
     return null;
   }
 
@@ -77,6 +94,13 @@ export default function RootStackNavigator() {
     <Stack.Navigator screenOptions={screenOptions}>
       {!isAuthenticated ? (
         <>
+          {!hasSeenOnboarding && (
+            <Stack.Screen
+              name="Onboarding"
+              component={OnboardingScreen}
+              options={{ headerShown: false }}
+            />
+          )}
           <Stack.Screen
             name="Auth"
             component={AuthScreen}

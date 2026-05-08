@@ -2214,6 +2214,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete Account
+  app.delete("/api/auth/account", async (req, res) => {
+    try {
+      const { userId, userType } = req.body as { userId: string; userType: string };
+      if (!userId || !userType) {
+        return res.status(400).json({ success: false, error: "Missing userId or userType" });
+      }
+      // Remove push token first so no orphan notifications are sent
+      await storage.deletePushToken(userId, userType).catch(() => {});
+      if (userType === "client") {
+        await storage.deleteClient(userId);
+      } else if (userType === "driver") {
+        await storage.deleteDriver(userId);
+      }
+      res.json({ success: true });
+    } catch (error) {
+      req.log.error({ error }, "Error deleting account");
+      res.status(500).json({ success: false, error: "Failed to delete account" });
+    }
+  });
+
   // Push Token routes
   app.post("/api/push-tokens", async (req, res) => {
     try {

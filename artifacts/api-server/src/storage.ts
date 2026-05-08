@@ -936,6 +936,16 @@ export async function deletePushToken(userId: string, userType: string): Promise
   return true;
 }
 
+export async function deleteClient(id: string): Promise<boolean> {
+  await db.delete(clients).where(eq(clients.id, id));
+  return true;
+}
+
+export async function deleteDriver(id: string): Promise<boolean> {
+  await db.delete(drivers).where(eq(drivers.id, id));
+  return true;
+}
+
 // Favorite Drivers functions
 export async function addFavoriteDriver(clientId: string, driverId: string): Promise<FavoriteDriver> {
   const existing = await db.select().from(favoriteDrivers)

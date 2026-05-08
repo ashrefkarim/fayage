@@ -47,7 +47,13 @@
           }
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "color": "#0066CC"
+        }
+      ]
     ],
     "experiments": {
       "reactCompiler": true

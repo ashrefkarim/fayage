@@ -75,6 +75,7 @@ interface AuthContextType {
   signup: (data: SignupData) => Promise<{ user: User }>;
   signupDriver: (data: DriverSignupData) => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   updateUser: (updates: Partial<User>) => Promise<void>;
   canAcceptOrders: () => boolean;
 }
@@ -363,6 +364,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deleteAccount = async () => {
+    if (!user) return;
+    const apiUrl = getApiUrl();
+    const response = await fetch(new URL("/api/auth/account", apiUrl).toString(), {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user.id, userType: user.role }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || "Failed to delete account");
+    }
+    await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+    setUser(null);
+  };
+
   const canAcceptOrders = (): boolean => {
     if (!user) return false;
     if (user.role === "client") return true;
@@ -380,6 +397,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signup,
         signupDriver,
         logout,
+        deleteAccount,
         updateUser,
         canAcceptOrders,
       }}
