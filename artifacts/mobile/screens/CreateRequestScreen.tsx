@@ -49,6 +49,7 @@ export default function CreateRequestScreen() {
   const [selectedDriverId, setSelectedDriverId] = useState<string | undefined>();
   const [showDriverPicker, setShowDriverPicker] = useState(false);
   const [cashPayment, setCashPayment] = useState(true);
+  const [viaCashPlusWafaCash, setViaCashPlusWafaCash] = useState(false);
   const [paymentUndertaking, setPaymentUndertaking] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [mapPickerTarget, setMapPickerTarget] = useState<"pickup" | "delivery" | null>(null);
@@ -530,6 +531,24 @@ export default function CreateRequestScreen() {
           <ThemedText style={[styles.optionTitle, { flex: 1 }]}>{t("cashToDriver")}</ThemedText>
           <View style={[styles.radioCircle, { borderColor: cashPayment ? "#10B981" : theme.border }]}>
             {cashPayment ? <View style={[styles.radioDot, { backgroundColor: "#10B981" }]} /> : null}
+          </View>
+        </Pressable>
+
+        {/* CashPlus / WafaCash checkbox */}
+        <Pressable
+          onPress={() => setViaCashPlusWafaCash(!viaCashPlusWafaCash)}
+          style={[styles.undertakingBox, { backgroundColor: viaCashPlusWafaCash ? "#10B98108" : theme.backgroundSecondary, borderColor: viaCashPlusWafaCash ? "#10B981" : theme.border }]}
+        >
+          <View style={[styles.undertakingCheck, { borderColor: viaCashPlusWafaCash ? "#10B981" : theme.border, backgroundColor: viaCashPlusWafaCash ? "#10B981" : "transparent" }]}>
+            {viaCashPlusWafaCash ? <Icon name="check" size={13} color="#FFFFFF" /> : null}
+          </View>
+          <View style={{ flex: 1 }}>
+            <ThemedText style={[styles.undertakingText, { color: viaCashPlusWafaCash ? theme.text : theme.textSecondary }]}>
+              {t("viaCashPlusWafaCash")}
+            </ThemedText>
+            <ThemedText style={{ fontSize: 11, color: theme.textSecondary, marginTop: 2 }}>
+              CashPlus · WafaCash
+            </ThemedText>
           </View>
         </Pressable>
 

@@ -52,6 +52,7 @@ const translations: Translations = {
   photoOptionalMultiple: { fr: "Optionnel - Ajoutez jusqu'à 5 photos de vos marchandises", ar: "اختياري - أضف حتى 5 صور لبضائعك" },
   paymentMethod: { fr: "Mode de paiement", ar: "طريقة الدفع" },
   cashToDriver: { fr: "Paiement en espèces au chauffeur à la livraison", ar: "الدفع نقداً للسائق عند التسليم" },
+  viaCashPlusWafaCash: { fr: "Le paiement sera effectué via CashPlus ou WafaCash", ar: "سيتم الدفع عبر CashPlus أو WafaCash" },
   paymentUndertaking: { fr: "Je m'engage à payer le montant convenu au chauffeur à la livraison", ar: "أتعهد بدفع المبلغ المتفق عليه للسائق عند التسليم" },
   undertakingRequired: { fr: "Vous devez accepter les conditions de paiement", ar: "يجب قبول شروط الدفع" },
   reviewOrder: { fr: "Vérifier la commande", ar: "مراجعة الطلب" },
