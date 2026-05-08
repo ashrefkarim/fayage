@@ -240,8 +240,8 @@ export default function MapPickerModal({
 </body>
 </html>`;
 
-  // Confirm is enabled once the map is ready (timer or first coords received)
-  const canConfirm = mapReady;
+  // Confirm is enabled once map is ready AND geocoding has finished
+  const canConfirm = mapReady && !isGeocoding;
   const displayAddress = address || (mapReady && !isGeocoding
     ? `${currentCoords.latitude.toFixed(5)}, ${currentCoords.longitude.toFixed(5)}`
     : "");
@@ -363,10 +363,21 @@ export default function MapPickerModal({
               end={{ x: 1, y: 0 }}
               style={styles.confirmBtnGradient}
             >
-              <Icon name="check-circle" size={20} color="#FFFFFF" />
-              <ThemedText style={styles.confirmBtnText}>
-                {canConfirm ? "Confirmer ce lieu" : "Chargement de la carte…"}
-              </ThemedText>
+              {isGeocoding ? (
+                <>
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ThemedText style={styles.confirmBtnText}>
+                    Recherche de l'adresse…
+                  </ThemedText>
+                </>
+              ) : (
+                <>
+                  <Icon name="check-circle" size={20} color="#FFFFFF" />
+                  <ThemedText style={styles.confirmBtnText}>
+                    {mapReady ? "Confirmer ce lieu" : "Chargement de la carte…"}
+                  </ThemedText>
+                </>
+              )}
             </LinearGradient>
           </Pressable>
         </View>
