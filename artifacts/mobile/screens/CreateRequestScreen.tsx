@@ -14,6 +14,7 @@ import { Card } from "@/components/Card";
 import { VehicleTypeSelector } from "@/components/VehicleTypeSelector";
 import { DeliveryOptionSelector } from "@/components/DeliveryOptionSelector";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
+import MapPickerModal from "@/components/MapPickerModal";
 import { useTheme } from "@/hooks/useTheme";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -50,6 +51,7 @@ export default function CreateRequestScreen() {
   const [cashPayment, setCashPayment] = useState(true);
   const [paymentUndertaking, setPaymentUndertaking] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [mapPickerTarget, setMapPickerTarget] = useState<"pickup" | "delivery" | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -221,6 +223,7 @@ export default function CreateRequestScreen() {
               placeholder={t("enterPickup")}
               iconColor={theme.success}
               iconName="map-pin"
+              onOpenMapPicker={() => setMapPickerTarget("pickup")}
             />
           </View>
         </View>
@@ -241,6 +244,7 @@ export default function CreateRequestScreen() {
               placeholder={t("enterDelivery")}
               iconColor={theme.error}
               iconName="flag"
+              onOpenMapPicker={() => setMapPickerTarget("delivery")}
             />
           </View>
         </View>
@@ -692,6 +696,30 @@ export default function CreateRequestScreen() {
           </View>
         </View>
       </Modal>
+      <MapPickerModal
+        visible={mapPickerTarget !== null}
+        onClose={() => setMapPickerTarget(null)}
+        title={
+          mapPickerTarget === "pickup"
+            ? t("enterPickup")
+            : t("enterDelivery")
+        }
+        initialCoords={
+          mapPickerTarget === "pickup"
+            ? pickupCoords
+            : deliveryCoords
+        }
+        onConfirm={(address, coords) => {
+          if (mapPickerTarget === "pickup") {
+            setPickupAddress(address);
+            setPickupCoords(coords);
+          } else if (mapPickerTarget === "delivery") {
+            setDeliveryAddress(address);
+            setDeliveryCoords(coords);
+          }
+          setMapPickerTarget(null);
+        }}
+      />
     </KeyboardAwareScrollViewCompat>
   );
 }
