@@ -114,7 +114,7 @@ export function OfferDetailModal({
       try { arr = JSON.parse(raw); } catch { return []; }
     }
     return arr.filter(
-      (u) => typeof u === "string" && (u.startsWith("http://") || u.startsWith("https://"))
+      (u) => typeof u === "string" && (u.startsWith("http://") || u.startsWith("https://") || u.startsWith("data:"))
     );
   })();
 

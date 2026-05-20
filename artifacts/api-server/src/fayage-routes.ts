@@ -184,39 +184,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/uploads/:filename", serveUpload);
 
   // Photo upload endpoint
+  // We store photos as data: URIs (base64 embedded) so they survive server restarts
+  // and work on any hosting platform without a persistent filesystem.
   app.post("/api/upload-photo", async (req, res) => {
     try {
       const { base64, mimeType } = req.body;
-      
+
       if (!base64) {
         return res.status(400).json({ success: false, error: "No image data provided" });
       }
 
-      // Generate unique filename
-      const extension = mimeType?.includes("png") ? "png" : "jpg";
-      const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${extension}`;
-      const filePath = path.join(uploadsDir, filename);
+      // Strip any existing data-URL prefix so we have raw base64
+      const rawBase64 = base64.replace(/^data:image\/\w+;base64,/, "");
+      const type = (mimeType && mimeType.startsWith("image/")) ? mimeType : "image/jpeg";
 
-      // Remove data URL prefix if present
-      const base64Data = base64.replace(/^data:image\/\w+;base64,/, "");
-      
-      // Write file
-      fs.writeFileSync(filePath, Buffer.from(base64Data, "base64"));
-
-      // Build a URL the mobile client can actually reach.
-      // Use the incoming request headers so it mirrors the domain the app connected to,
-      // regardless of whether we're on Railway, Replit, or localhost.
-      const proto =
-        (req.get("x-forwarded-proto") || req.protocol || "https").split(",")[0].trim();
-      const host =
-        req.get("x-forwarded-host") ||
-        process.env.RAILWAY_PUBLIC_DOMAIN ||
-        process.env.REPLIT_DEV_DOMAIN ||
-        process.env.REPLIT_DOMAINS?.split(",")[0] ||
-        req.get("host") ||
-        "localhost:5000";
-      // /api/uploads/ is routed through every proxy layer; /uploads/ may not be
-      const photoUrl = `${proto}://${host}/api/uploads/${filename}`;
+      // Return a data URI — no disk I/O, survives restarts, works everywhere
+      const photoUrl = `data:${type};base64,${rawBase64}`;
 
       res.json({ success: true, url: photoUrl });
     } catch (error) {
