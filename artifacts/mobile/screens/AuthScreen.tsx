@@ -866,7 +866,6 @@ const styles = StyleSheet.create({
   welcomeRoot: {
     flex: 1,
     backgroundColor: "#060E1F",
-    overflow: "hidden",
   },
   welcomeTopBar: {
     flexDirection: "row",
