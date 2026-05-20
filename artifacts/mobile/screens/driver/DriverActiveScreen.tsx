@@ -55,13 +55,17 @@ export default function DriverActiveScreen() {
     const counts: Record<string, number> = {};
     await Promise.all(
       activeRequests.map(async (req) => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 5000);
         try {
           const url = new URL(`/api/messages/${req.id}/unread/${user.id}`, getApiUrl());
-          const response = await fetch(url.toString());
+          const response = await fetch(url.toString(), { signal: controller.signal });
           const data = await response.json();
           if (data.success) counts[req.id] = data.count;
-        } catch (error) {
-          console.error("Failed to fetch unread count:", error);
+        } catch {
+          // silent — transient network errors on mobile are expected
+        } finally {
+          clearTimeout(timer);
         }
       })
     );
