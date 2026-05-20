@@ -258,10 +258,10 @@ export async function getDriverLocation(driverId: string): Promise<DriverLocatio
 export async function getNearbyDrivers(lat?: number, lng?: number, radiusKm: number = 10): Promise<DriverLocation[]> {
   const allDrivers = await db.select().from(driverLocations).where(eq(driverLocations.isAvailable, true));
   
-  const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
   const onlineDrivers = allDrivers.filter(driver => {
     const updatedAt = driver.updatedAt ? new Date(driver.updatedAt) : null;
-    return updatedAt && updatedAt > twoMinutesAgo;
+    return updatedAt && updatedAt > fiveMinutesAgo;
   });
   
   if (!lat || !lng) {

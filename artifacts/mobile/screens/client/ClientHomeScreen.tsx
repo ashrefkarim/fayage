@@ -79,7 +79,7 @@ export default function ClientHomeScreen() {
   const [showMap, setShowMap] = useState(Platform.OS !== "android");
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
 
-  const { drivers: nearbyDrivers } = useNearbyDrivers({ userLocation, enabled: showMap });
+  const { drivers: nearbyDrivers } = useNearbyDrivers({ userLocation, enabled: true });
 
   useEffect(() => {
     let isMounted = true;
