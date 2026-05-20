@@ -359,13 +359,6 @@ export function OfferDetailModal({
                   <ThemedText style={styles.priceAmount}>{driverNet}</ThemedText>
                   <ThemedText style={styles.priceCur}>MAD</ThemedText>
                 </View>
-                <View style={[styles.commissionRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-                  <View style={styles.commissionPill}>
-                    <ThemedText style={styles.commissionText}>
-                      Commission Fayage {rate}%
-                    </ThemedText>
-                  </View>
-                </View>
               </LinearGradient>
             )}
           </View>
