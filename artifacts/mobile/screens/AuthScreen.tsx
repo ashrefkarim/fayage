@@ -62,11 +62,55 @@ export default function AuthScreen() {
   const logoTapCount = useRef(0);
   const logoTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const logoScaleAnim = useRef(new Animated.Value(0.88)).current;
+  // Welcome screen entrance animations
+  const logoOpacityAnim = useRef(new Animated.Value(0)).current;
+  const logoScaleAnim   = useRef(new Animated.Value(0.82)).current;
+  const cardSlideAnim   = useRef(new Animated.Value(60)).current;
+  const cardOpacityAnim = useRef(new Animated.Value(0)).current;
+  const btnPulseAnim    = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (mode !== "welcome") return;
-    Animated.spring(logoScaleAnim, { toValue: 1, friction: 6, tension: 40, useNativeDriver: true }).start();
+
+    // Reset to initial state each time welcome is shown
+    logoOpacityAnim.setValue(0);
+    logoScaleAnim.setValue(0.82);
+    cardSlideAnim.setValue(60);
+    cardOpacityAnim.setValue(0);
+    btnPulseAnim.setValue(1);
+
+    // 1) Logo fades + springs in
+    Animated.parallel([
+      Animated.timing(logoOpacityAnim, { toValue: 1, duration: 480, useNativeDriver: true }),
+      Animated.spring(logoScaleAnim, { toValue: 1, friction: 6, tension: 38, useNativeDriver: true }),
+    ]).start();
+
+    // 2) Card slides up after 250ms
+    Animated.parallel([
+      Animated.timing(cardOpacityAnim, {
+        toValue: 1, duration: 500, delay: 250, useNativeDriver: true,
+      }),
+      Animated.timing(cardSlideAnim, {
+        toValue: 0, duration: 540, delay: 250,
+        easing: (t) => 1 - Math.pow(1 - t, 3), // ease-out-cubic
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // 3) Button pulse loop starts after card settles (~900ms)
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(btnPulseAnim, { toValue: 1.032, duration: 900, useNativeDriver: true }),
+        Animated.timing(btnPulseAnim, { toValue: 1,     duration: 900, useNativeDriver: true }),
+      ]),
+      { iterations: -1 },
+    );
+    const pulseTimer = setTimeout(() => pulse.start(), 900);
+
+    return () => {
+      clearTimeout(pulseTimer);
+      pulse.stop();
+    };
   }, [mode]);
 
   const switchMode = (newMode: AuthMode) => {
@@ -303,9 +347,9 @@ export default function AuthScreen() {
           <LanguageToggle light />
         </View>
 
-        {/* Visual hero — flex:1 fills all space between topBar and card */}
+        {/* Visual hero — flex:1, logo fades + springs in */}
         <View style={styles.welcomeHero}>
-          <Animated.View style={{ transform: [{ scale: logoScaleAnim }] }}>
+          <Animated.View style={{ opacity: logoOpacityAnim, transform: [{ scale: logoScaleAnim }] }}>
             <Pressable onPress={handleLogoTap} style={styles.logoDisc}>
               <Image
                 source={appLogo && !logoLoadError ? { uri: appLogo } : require("../assets/images/icon.png")}
@@ -317,11 +361,15 @@ export default function AuthScreen() {
           </Animated.View>
         </View>
 
-        {/* Text + CTA — sits at bottom, natural height, no transforms */}
-        <View
+        {/* Text + CTA — slides up from below */}
+        <Animated.View
           style={[
             styles.welcomeCard,
-            { paddingBottom: Math.max(insets.bottom + 16, 28) },
+            {
+              paddingBottom: Math.max(insets.bottom + 16, 28),
+              opacity: cardOpacityAnim,
+              transform: [{ translateY: cardSlideAnim }],
+            },
           ]}
         >
           <View style={styles.welcomeTextBlock}>
@@ -346,21 +394,23 @@ export default function AuthScreen() {
             ))}
           </View>
 
-          {/* CTA */}
-          <Pressable
-            onPress={() => setMode("role")}
-            style={({ pressed }) => [styles.ctaWrapper, { opacity: pressed ? 0.88 : 1 }]}
-          >
-            <LinearGradient
-              colors={["#1E88E5", "#0D47A1"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.ctaBtn}
+          {/* CTA — pulsing Animated.View wrapper */}
+          <Animated.View style={{ transform: [{ scale: btnPulseAnim }] }}>
+            <Pressable
+              onPress={() => setMode("role")}
+              style={({ pressed }) => [styles.ctaWrapper, { opacity: pressed ? 0.88 : 1 }]}
             >
-              <ThemedText style={styles.ctaBtnText}>{t("getStarted")}</ThemedText>
-              <ThemedText style={styles.ctaArrow}>{isRTL ? "←" : "→"}</ThemedText>
-            </LinearGradient>
-          </Pressable>
+              <LinearGradient
+                colors={["#1E88E5", "#0D47A1"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.ctaBtn}
+              >
+                <ThemedText style={styles.ctaBtnText}>{t("getStarted")}</ThemedText>
+                <ThemedText style={styles.ctaArrow}>{isRTL ? "←" : "→"}</ThemedText>
+              </LinearGradient>
+            </Pressable>
+          </Animated.View>
 
           {/* Sign-in link */}
           <Pressable
@@ -370,7 +420,7 @@ export default function AuthScreen() {
             <ThemedText style={styles.signInText}>{t("alreadyHaveAccount")} </ThemedText>
             <ThemedText style={styles.signInLink}>{t("signIn")}</ThemedText>
           </Pressable>
-        </View>
+        </Animated.View>
       </View>
     );
   };
