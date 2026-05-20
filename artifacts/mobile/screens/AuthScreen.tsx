@@ -901,7 +901,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
-    paddingTop: 24,
+    paddingTop: 44,
     paddingHorizontal: 28,
     gap: 14,
     ...Platform.select({
@@ -919,6 +919,8 @@ const styles = StyleSheet.create({
     color: "#060E1F",
     letterSpacing: -1,
     fontFamily: "Poppins_700Bold",
+    lineHeight: 44,
+    includeFontPadding: false,
   },
   dividerRow: {
     flexDirection: "row",
