@@ -703,14 +703,14 @@ export default function AuthScreen() {
           <ThemedText style={{ fontSize: 13, color: theme.textSecondary, lineHeight: 19 }}>
             {"J'accepte les "}
             <ThemedText
-              onPress={() => Linking.openURL("https://fayage.app/terms")}
+              onPress={() => Linking.openURL("https://sites.google.com/view/fayage-terms")}
               style={{ fontSize: 13, color: theme.primary, fontWeight: "600" }}
             >
               conditions d'utilisation
             </ThemedText>
             {" et la "}
             <ThemedText
-              onPress={() => Linking.openURL("https://fayage.app/privacy")}
+              onPress={() => Linking.openURL("https://sites.google.com/view/fayage-privacy")}
               style={{ fontSize: 13, color: theme.primary, fontWeight: "600" }}
             >
               politique de confidentialité
