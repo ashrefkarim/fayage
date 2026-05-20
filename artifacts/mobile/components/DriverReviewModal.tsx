@@ -168,12 +168,6 @@ export function DriverReviewModal({
               </View>
 
               <ThemedText style={styles.driverName}>{driverName}</ThemedText>
-              {!hidePhone && driverPhone ? (
-                <View style={styles.phoneRow}>
-                  <Icon name="phone" size={13} color="rgba(255,255,255,0.55)" />
-                  <ThemedText style={styles.driverPhone}>{driverPhone}</ThemedText>
-                </View>
-              ) : null}
 
               {/* Rating pill */}
               <View style={styles.ratingPill}>
