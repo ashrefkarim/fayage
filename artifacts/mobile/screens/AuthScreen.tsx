@@ -62,28 +62,11 @@ export default function AuthScreen() {
   const logoTapCount = useRef(0);
   const logoTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const glowAnim = useRef(new Animated.Value(0)).current;
-  const logoScaleAnim = useRef(new Animated.Value(0.85)).current;
-  const contentSlideAnim = useRef(new Animated.Value(30)).current;
-  const contentOpacityAnim = useRef(new Animated.Value(1)).current;
+  const logoScaleAnim = useRef(new Animated.Value(0.88)).current;
 
   useEffect(() => {
     if (mode !== "welcome") return;
-    // Entrance animation
-    Animated.parallel([
-      Animated.spring(logoScaleAnim, { toValue: 1, friction: 6, tension: 40, useNativeDriver: true }),
-      Animated.timing(contentOpacityAnim, { toValue: 1, duration: 600, delay: 200, useNativeDriver: true }),
-      Animated.timing(contentSlideAnim, { toValue: 0, duration: 500, delay: 200, useNativeDriver: true }),
-    ]).start();
-    // Glow breathing
-    const glow = Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 1, duration: 3000, useNativeDriver: true }),
-        Animated.timing(glowAnim, { toValue: 0, duration: 3000, useNativeDriver: true }),
-      ])
-    );
-    glow.start();
-    return () => glow.stop();
+    Animated.spring(logoScaleAnim, { toValue: 1, friction: 6, tension: 40, useNativeDriver: true }).start();
   }, [mode]);
 
   const switchMode = (newMode: AuthMode) => {
@@ -315,14 +298,13 @@ export default function AuthScreen() {
   const renderWelcome = () => {
     return (
       <View style={styles.welcomeRoot}>
-        {/* Language toggle */}
-        <View style={[styles.welcomeTopBar, { paddingTop: insets.top + 16 }]}>
-          <View />
+        {/* Language toggle — in normal flex flow, respects safe area */}
+        <View style={[styles.welcomeTopBar, { paddingTop: insets.top + 12 }]}>
           <LanguageToggle light />
         </View>
 
-        {/* Visual hero */}
-        <View style={[styles.welcomeHero, { paddingTop: insets.top + 56 }]}>
+        {/* Visual hero — flex:1 fills all space between topBar and card */}
+        <View style={styles.welcomeHero}>
           <Animated.View style={{ transform: [{ scale: logoScaleAnim }] }}>
             <Pressable onPress={handleLogoTap} style={styles.logoDisc}>
               <Image
@@ -335,11 +317,11 @@ export default function AuthScreen() {
           </Animated.View>
         </View>
 
-        {/* Text + CTA */}
-        <Animated.View
+        {/* Text + CTA — sits at bottom, natural height, no transforms */}
+        <View
           style={[
             styles.welcomeCard,
-            { paddingBottom: Math.max(insets.bottom + 20, 32), opacity: contentOpacityAnim, transform: [{ translateY: contentSlideAnim }] },
+            { paddingBottom: Math.max(insets.bottom + 16, 28) },
           ]}
         >
           <View style={styles.welcomeTextBlock}>
@@ -388,7 +370,7 @@ export default function AuthScreen() {
             <ThemedText style={styles.signInText}>{t("alreadyHaveAccount")} </ThemedText>
             <ThemedText style={styles.signInLink}>{t("signIn")}</ThemedText>
           </Pressable>
-        </Animated.View>
+        </View>
       </View>
     );
   };
@@ -838,37 +820,16 @@ const styles = StyleSheet.create({
   },
   welcomeTopBar: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     alignItems: "center",
-    paddingHorizontal: 28,
-    position: "absolute",
-    left: 0,
-    right: 0,
-    zIndex: 10,
+    paddingHorizontal: 24,
+    paddingBottom: 8,
   },
   welcomeHero: {
     flex: 1,
-    minHeight: 260,
     alignItems: "center",
     justifyContent: "center",
-  },
-  logoRingOuter: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: "rgba(100,160,255,0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoRingMid: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    borderWidth: 1.5,
-    borderColor: "rgba(100,160,255,0.32)",
-    alignItems: "center",
-    justifyContent: "center",
+    minHeight: 220,
   },
   logoDisc: {
     width: 120,
@@ -879,8 +840,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     overflow: "hidden",
     ...Platform.select({
-      ios: { shadowColor: "#1E88E5", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 28 },
-      android: { elevation: 20 },
+      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 20 },
+      android: { elevation: 16 },
     }),
   },
   logoImg: {

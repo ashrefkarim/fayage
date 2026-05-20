@@ -1,35 +1,78 @@
 export function WelcomeScreen() {
   return (
     <div
-      className="relative w-full overflow-hidden flex flex-col"
-      style={{ backgroundColor: "#060E1F", fontFamily: "'Inter', sans-serif", height: "100dvh" }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100dvh",
+        width: "100%",
+        backgroundColor: "#060E1F",
+        fontFamily: "'Inter', sans-serif",
+        overflow: "hidden",
+      }}
     >
-      {/* Top-right language toggle */}
-      <div className="absolute top-10 right-5 z-10">
+      {/* Top bar — in flex flow, aligned right */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          paddingTop: 52,
+          paddingRight: 24,
+          paddingBottom: 8,
+        }}
+      >
         <div
-          className="flex items-center gap-1 rounded-full px-3 py-1.5 border"
-          style={{ backgroundColor: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            borderRadius: 100,
+            padding: "6px 12px",
+            backgroundColor: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.15)",
+          }}
         >
-          <span className="text-white/80 text-xs font-semibold">FR</span>
-          <span className="text-white/25 text-xs">|</span>
-          <span className="text-white/35 text-xs">AR</span>
+          <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: 700 }}>FR</span>
+          <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 12 }}>|</span>
+          <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 12 }}>AR</span>
         </div>
       </div>
 
-      {/* Hero zone — no rings, clean disc */}
-      <div className="flex-1 flex items-center justify-center" style={{ paddingTop: 72, minHeight: 260 }}>
-        {/* Logo disc — just a clean white circle, no blue rings */}
+      {/* Hero — flex:1, logo centered */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 220,
+        }}
+      >
         <div
-          className="flex items-center justify-center rounded-full bg-white overflow-hidden"
           style={{
             width: 120,
             height: 120,
+            borderRadius: 60,
+            backgroundColor: "#FFFFFF",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
             boxShadow: "0 8px 40px rgba(0,0,0,0.45), 0 2px 12px rgba(0,0,0,0.3)",
           }}
         >
           <div
-            className="rounded-2xl flex items-center justify-center"
-            style={{ width: 80, height: 80, background: "linear-gradient(135deg, #1E88E5, #0D47A1)" }}
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 18,
+              background: "linear-gradient(135deg, #1E88E5, #0D47A1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
             <svg width="46" height="36" viewBox="0 0 46 36" fill="none">
               <rect x="0" y="14" width="30" height="16" rx="3" fill="white" fillOpacity="0.25"/>
@@ -43,67 +86,87 @@ export function WelcomeScreen() {
         </div>
       </div>
 
-      {/* White bottom card */}
+      {/* White card — natural height at bottom */}
       <div
-        className="bg-white flex flex-col px-7"
         style={{
+          backgroundColor: "#FFFFFF",
           borderTopLeftRadius: 40,
           borderTopRightRadius: 40,
           paddingTop: 24,
           paddingBottom: 40,
+          paddingLeft: 28,
+          paddingRight: 28,
+          display: "flex",
+          flexDirection: "column",
           gap: 14,
           boxShadow: "0 -6px 28px rgba(0,0,0,0.18)",
         }}
       >
-        {/* App name + divider + slogan */}
-        <div className="flex flex-col items-center gap-2">
+        {/* FAYAGE + divider + slogan */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
           <h1
-            className="text-center"
-            style={{ fontSize: 34, fontWeight: 800, color: "#060E1F", letterSpacing: -1, lineHeight: 1.1, margin: 0 }}
+            style={{
+              margin: 0,
+              fontSize: 34,
+              fontWeight: 800,
+              color: "#060E1F",
+              letterSpacing: -1,
+              lineHeight: 1.1,
+              textAlign: "center",
+            }}
           >
             FAYAGE
           </h1>
-          <div className="flex items-center gap-2" style={{ width: "55%" }}>
-            <div className="flex-1 h-px" style={{ backgroundColor: "#E5E7EB" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 8, width: "55%" }}>
+            <div style={{ flex: 1, height: 1, backgroundColor: "#E5E7EB" }} />
             <span style={{ color: "#1E88E5", fontSize: 11 }}>✦</span>
-            <div className="flex-1 h-px" style={{ backgroundColor: "#E5E7EB" }} />
+            <div style={{ flex: 1, height: 1, backgroundColor: "#E5E7EB" }} />
           </div>
-          <p className="text-center text-sm m-0" style={{ color: "#6B7280", letterSpacing: 0.2 }}>
+          <p style={{ margin: 0, fontSize: 14, color: "#6B7280", letterSpacing: 0.2, textAlign: "center" }}>
             Transport rapide et fiable
           </p>
         </div>
 
         {/* Trust pills */}
-        <div className="flex flex-row items-center justify-center flex-wrap" style={{ gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", flexWrap: "wrap", gap: 8 }}>
           {["🚀 Rapide", "🔒 Sécurisé", "📍 Temps réel"].map((label) => (
             <div
               key={label}
-              className="rounded-full px-3 py-1 border"
-              style={{ backgroundColor: "#F0F7FF", borderColor: "#DBEAFE" }}
+              style={{
+                backgroundColor: "#F0F7FF",
+                borderRadius: 100,
+                padding: "5px 12px",
+                border: "1px solid #DBEAFE",
+              }}
             >
-              <span className="text-xs font-semibold" style={{ color: "#1D4ED8" }}>{label}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#1D4ED8" }}>{label}</span>
             </div>
           ))}
         </div>
 
         {/* CTA button */}
         <button
-          className="w-full flex items-center justify-center rounded-full border-none cursor-pointer"
           style={{
+            width: "100%",
             background: "linear-gradient(to right, #1E88E5, #0D47A1)",
-            paddingTop: 17,
-            paddingBottom: 17,
+            border: "none",
+            borderRadius: 100,
+            padding: "17px 0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             gap: 10,
+            cursor: "pointer",
           }}
         >
-          <span className="font-bold text-white" style={{ fontSize: 17 }}>Commencer</span>
-          <span className="text-white/75 font-semibold" style={{ fontSize: 17 }}>→</span>
+          <span style={{ fontWeight: 700, color: "#fff", fontSize: 17 }}>Commencer</span>
+          <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 17, fontWeight: 600 }}>→</span>
         </button>
 
         {/* Sign-in link */}
-        <div className="flex items-center justify-center gap-1">
-          <span className="text-sm" style={{ color: "#9CA3AF" }}>J'ai déjà un compte</span>
-          <span className="text-sm font-bold" style={{ color: "#1E88E5" }}>Se connecter</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+          <span style={{ fontSize: 14, color: "#9CA3AF" }}>J'ai déjà un compte</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#1E88E5" }}>Se connecter</span>
         </div>
       </div>
     </div>
