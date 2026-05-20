@@ -12,6 +12,7 @@ import { MapViewComponent, LocationCoordinates } from "@/components/MapViewCompo
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { JobCard } from "@/components/JobCard";
+import { OfferDetailModal } from "@/components/OfferDetailModal";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { useTheme } from "@/hooks/useTheme";
@@ -95,6 +96,7 @@ export default function DriverJobsScreen() {
 
   const [negotiateModal, setNegotiateModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<TransportRequest | null>(null);
+  const [detailRequest, setDetailRequest] = useState<TransportRequest | null>(null);
   const [counterOffer, setCounterOffer] = useState("");
   const [driverOffers, setDriverOffers] = useState<DriverOffer[]>([]);
   const [locationModalVisible, setLocationModalVisible] = useState(false);
@@ -223,13 +225,18 @@ export default function DriverJobsScreen() {
   const renderItem = ({ item }: { item: TransportRequest }) => {
     const offer = getOfferForOrder(item.id);
     return (
-      <JobCard
-        request={item}
-        onAccept={() => handleAccept(item)}
-        onNegotiate={() => handleNegotiate(item)}
-        hasOffered={!!offer}
-        offeredPrice={offer?.offeredPrice}
-      />
+      <Pressable
+        onPress={() => setDetailRequest(item)}
+        style={({ pressed }) => ({ opacity: pressed ? 0.96 : 1 })}
+      >
+        <JobCard
+          request={item}
+          onAccept={() => handleAccept(item)}
+          onNegotiate={() => handleNegotiate(item)}
+          hasOffered={!!offer}
+          offeredPrice={offer?.offeredPrice}
+        />
+      </Pressable>
     );
   };
 
@@ -540,6 +547,22 @@ export default function DriverJobsScreen() {
           </ThemedView>
         </View>
       </Modal>
+
+      <OfferDetailModal
+        visible={detailRequest !== null}
+        request={detailRequest}
+        hasOffered={detailRequest ? !!getOfferForOrder(detailRequest.id) : false}
+        offeredPrice={detailRequest ? getOfferForOrder(detailRequest.id)?.offeredPrice : undefined}
+        onClose={() => setDetailRequest(null)}
+        onAccept={() => {
+          if (detailRequest) handleAccept(detailRequest);
+          setDetailRequest(null);
+        }}
+        onNegotiate={() => {
+          if (detailRequest) handleNegotiate(detailRequest);
+          setDetailRequest(null);
+        }}
+      />
     </View>
   );
 }
