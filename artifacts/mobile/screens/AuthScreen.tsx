@@ -62,6 +62,29 @@ export default function AuthScreen() {
   const logoTapCount = useRef(0);
   const logoTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  const logoScaleAnim = useRef(new Animated.Value(0.85)).current;
+  const contentSlideAnim = useRef(new Animated.Value(30)).current;
+  const contentOpacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (mode !== "welcome") return;
+    // Entrance animation
+    Animated.parallel([
+      Animated.spring(logoScaleAnim, { toValue: 1, friction: 6, tension: 40, useNativeDriver: true }),
+      Animated.timing(contentOpacityAnim, { toValue: 1, duration: 600, delay: 200, useNativeDriver: true }),
+      Animated.timing(contentSlideAnim, { toValue: 0, duration: 500, delay: 200, useNativeDriver: true }),
+    ]).start();
+    // Glow breathing
+    const glow = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, { toValue: 1, duration: 3000, useNativeDriver: true }),
+        Animated.timing(glowAnim, { toValue: 0, duration: 3000, useNativeDriver: true }),
+      ])
+    );
+    glow.start();
+    return () => glow.stop();
+  }, [mode]);
 
   const switchMode = (newMode: AuthMode) => {
     Animated.timing(fadeAnim, { toValue: 0, duration: 140, useNativeDriver: true }).start(() => {
@@ -289,48 +312,95 @@ export default function AuthScreen() {
     setSelectedRole(role);
   };
 
-  const renderWelcome = () => (
-    <View style={styles.welcomeContent}>
-      <View style={styles.logoContainer}>
-        <LinearGradient
-          colors={gradients.primary as [string, string]}
-          style={styles.logoGradient}
-        >
-          <Image
-            source={appLogo && !logoLoadError ? { uri: appLogo } : require("../assets/images/icon.png")}
-            style={styles.logo}
-            resizeMode="contain"
-            onError={() => setLogoLoadError(true)}
-          />
-        </LinearGradient>
-      </View>
-      
-      <ThemedText type="display" style={styles.title}>
-        {appName}
-      </ThemedText>
-      <ThemedText style={[styles.tagline, { color: theme.textSecondary }]}>
-        {appSlogan}
-      </ThemedText>
+  const renderWelcome = () => {
+    const glowOpacity = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.7] });
+    const glowScale = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.18] });
 
-      <View style={styles.welcomeButtons}>
-        <Button onPress={() => setMode("role")}>
-          {t("getStarted")}
-        </Button>
-        
-        <Pressable
-          onPress={() => setMode("login")}
-          style={({ pressed }) => [styles.linkButton, { opacity: pressed ? 0.7 : 1 }]}
+    return (
+      <View style={styles.welcomeRoot}>
+        {/* Animated glow layers */}
+        <Animated.View style={[styles.glowOuter, { opacity: glowOpacity, transform: [{ scale: glowScale }] }]} />
+        <Animated.View style={[styles.glowMid, { opacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.2, 0.45] }), transform: [{ scale: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] }) }] }]} />
+
+        {/* Language toggle */}
+        <View style={[styles.welcomeTopBar, { paddingTop: insets.top + 16 }]}>
+          <View />
+          <LanguageToggle light />
+        </View>
+
+        {/* Visual hero */}
+        <View style={styles.welcomeHero}>
+          <Animated.View style={[styles.logoRingOuter, { transform: [{ scale: logoScaleAnim }] }]}>
+            <View style={styles.logoRingMid}>
+              <Pressable onPress={handleLogoTap} style={styles.logoDisc}>
+                <Image
+                  source={appLogo && !logoLoadError ? { uri: appLogo } : require("../assets/images/icon.png")}
+                  style={styles.logoImg}
+                  resizeMode="contain"
+                  onError={() => setLogoLoadError(true)}
+                />
+              </Pressable>
+            </View>
+          </Animated.View>
+        </View>
+
+        {/* Text + CTA */}
+        <Animated.View
+          style={[
+            styles.welcomeCard,
+            { paddingBottom: insets.bottom + 36, opacity: contentOpacityAnim, transform: [{ translateY: contentSlideAnim }] },
+          ]}
         >
-          <ThemedText style={{ color: theme.textSecondary }}>
-            {t("alreadyHaveAccount")}{" "}
-          </ThemedText>
-          <ThemedText style={[styles.linkText, { color: theme.primary }]}>
-            {t("signIn")}
-          </ThemedText>
-        </Pressable>
+          <View style={styles.welcomeTextBlock}>
+            <ThemedText style={styles.welcomeAppName}>{appName}</ThemedText>
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <ThemedText style={styles.dividerDot}>✦</ThemedText>
+              <View style={styles.dividerLine} />
+            </View>
+            <ThemedText style={styles.welcomeSlogan}>{appSlogan}</ThemedText>
+          </View>
+
+          {/* Trust pills */}
+          <View style={styles.trustRow}>
+            {(language === "ar"
+              ? ["🚀 سريع", "🔒 آمن", "📍 تتبع مباشر"]
+              : ["🚀 Rapide", "🔒 Sécurisé", "📍 Temps réel"]
+            ).map((label) => (
+              <View key={label} style={styles.trustPill}>
+                <ThemedText style={styles.trustPillText}>{label}</ThemedText>
+              </View>
+            ))}
+          </View>
+
+          {/* CTA */}
+          <Pressable
+            onPress={() => setMode("role")}
+            style={({ pressed }) => [styles.ctaWrapper, { opacity: pressed ? 0.88 : 1 }]}
+          >
+            <LinearGradient
+              colors={["#1E88E5", "#0D47A1"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.ctaBtn}
+            >
+              <ThemedText style={styles.ctaBtnText}>{t("getStarted")}</ThemedText>
+              <ThemedText style={styles.ctaArrow}>{isRTL ? "←" : "→"}</ThemedText>
+            </LinearGradient>
+          </Pressable>
+
+          {/* Sign-in link */}
+          <Pressable
+            onPress={() => setMode("login")}
+            style={({ pressed }) => [styles.signInRow, { opacity: pressed ? 0.7 : 1 }]}
+          >
+            <ThemedText style={styles.signInText}>{t("alreadyHaveAccount")} </ThemedText>
+            <ThemedText style={styles.signInLink}>{t("signIn")}</ThemedText>
+          </Pressable>
+        </Animated.View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderRoleSelection = () => (
     <View style={styles.formContent}>
@@ -673,18 +743,7 @@ export default function AuthScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
       {mode === "welcome" ? (
-        <LinearGradient
-          colors={gradients.primary as [string, string]}
-          style={styles.welcomeGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
-            <View style={styles.backButton} />
-            <LanguageToggle light />
-          </View>
-          {renderWelcome()}
-        </LinearGradient>
+        renderWelcome()
       ) : (
         <KeyboardAwareScrollViewCompat
           style={styles.scrollView}
@@ -780,9 +839,182 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  welcomeGradient: {
+  // ── Welcome redesign ──────────────────────────────────────
+  welcomeRoot: {
     flex: 1,
+    backgroundColor: "#060E1F",
+    overflow: "hidden",
   },
+  glowOuter: {
+    position: "absolute",
+    width: 420,
+    height: 420,
+    borderRadius: 210,
+    backgroundColor: "#1565C0",
+    alignSelf: "center",
+    top: "18%",
+  },
+  glowMid: {
+    position: "absolute",
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: "#42A5F5",
+    alignSelf: "center",
+    top: "26%",
+  },
+  welcomeTopBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 28,
+    position: "absolute",
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  welcomeHero: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoRingOuter: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: "rgba(100,160,255,0.18)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoRingMid: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    borderWidth: 1.5,
+    borderColor: "rgba(100,160,255,0.32)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoDisc: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    ...Platform.select({
+      ios: { shadowColor: "#1E88E5", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 28 },
+      android: { elevation: 20 },
+    }),
+  },
+  logoImg: {
+    width: 120,
+    height: 120,
+  },
+  welcomeCard: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    paddingTop: 32,
+    paddingHorizontal: 28,
+    gap: 20,
+    ...Platform.select({
+      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: -6 }, shadowOpacity: 0.15, shadowRadius: 20 },
+      android: { elevation: 16 },
+    }),
+  },
+  welcomeTextBlock: {
+    alignItems: "center",
+    gap: 8,
+  },
+  welcomeAppName: {
+    fontSize: 36,
+    fontWeight: "800",
+    color: "#060E1F",
+    letterSpacing: -1,
+    fontFamily: "Poppins_700Bold",
+  },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    width: "60%",
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#E5E7EB",
+  },
+  dividerDot: {
+    color: "#1E88E5",
+    fontSize: 12,
+  },
+  welcomeSlogan: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    letterSpacing: 0.2,
+  },
+  trustRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  trustPill: {
+    backgroundColor: "#F0F7FF",
+    borderRadius: 100,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: "#DBEAFE",
+  },
+  trustPillText: {
+    fontSize: 12,
+    color: "#1D4ED8",
+    fontWeight: "600",
+  },
+  ctaWrapper: {
+    borderRadius: 100,
+    overflow: "hidden",
+  },
+  ctaBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 18,
+    gap: 10,
+  },
+  ctaBtnText: {
+    color: "#FFFFFF",
+    fontSize: 17,
+    fontWeight: "700",
+    fontFamily: "Poppins_600SemiBold",
+  },
+  ctaArrow: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  signInRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 4,
+  },
+  signInText: {
+    color: "#9CA3AF",
+    fontSize: 14,
+  },
+  signInLink: {
+    color: "#1E88E5",
+    fontSize: 14,
+    fontWeight: "700",
+    fontFamily: "Poppins_600SemiBold",
+  },
+  // ─────────────────────────────────────────────────────────
   scrollView: {
     flex: 1,
   },
@@ -809,46 +1041,6 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
-  },
-  welcomeContent: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing["4xl"],
-  },
-  logoContainer: {
-    marginBottom: Spacing["2xl"],
-    width: 160,
-    alignItems: "center",
-  },
-  logoGradient: {
-    width: 160,
-    height: 160,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  logo: {
-    width: 160,
-    height: 160,
-  },
-  title: {
-    color: "#FFFFFF",
-    textAlign: "center",
-    marginBottom: Spacing.sm,
-  },
-  tagline: {
-    fontSize: 16,
-    color: "rgba(255,255,255,0.8)",
-    textAlign: "center",
-    marginBottom: Spacing["4xl"],
-  },
-  welcomeButtons: {
-    width: "100%",
-    maxWidth: 320,
-    gap: Spacing.lg,
   },
   linkButton: {
     flexDirection: "row",
