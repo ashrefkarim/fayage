@@ -107,7 +107,7 @@ export default function DriverJobsScreen() {
   const fetchDriverOffers = useCallback(async () => {
     if (!user?.id) return;
     try {
-      const response = await fetch(`${getApiUrl()}/api/driver-offers/${user.id}`);
+      const response = await fetch(`${getApiUrl()}api/driver-offers/${user.id}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
