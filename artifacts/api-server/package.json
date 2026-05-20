@@ -24,6 +24,7 @@
     "drizzle-zod": "^0.8.3",
     "expo-server-sdk": "^3.15.0",
     "express": "^5",
+    "express-rate-limit": "^8.5.2",
     "nodemailer": "^6.10.1",
     "pg": "^8.13.3",
     "resend": "^6.12.2",

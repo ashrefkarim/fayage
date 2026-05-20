@@ -888,10 +888,26 @@ export async function updateClientPassword(email: string, hashedPassword: string
   return result[0];
 }
 
+export async function updateClientPasswordById(id: string, hashedPassword: string): Promise<Client | undefined> {
+  const result = await db.update(clients)
+    .set({ password: hashedPassword, updatedAt: new Date() })
+    .where(eq(clients.id, id))
+    .returning();
+  return result[0];
+}
+
 export async function updateDriverPassword(email: string, hashedPassword: string): Promise<Driver | undefined> {
   const result = await db.update(drivers)
     .set({ password: hashedPassword, updatedAt: new Date() })
     .where(eq(drivers.email, email))
+    .returning();
+  return result[0];
+}
+
+export async function updateDriverPasswordById(id: string, hashedPassword: string): Promise<Driver | undefined> {
+  const result = await db.update(drivers)
+    .set({ password: hashedPassword, updatedAt: new Date() })
+    .where(eq(drivers.id, id))
     .returning();
   return result[0];
 }

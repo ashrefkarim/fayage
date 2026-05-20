@@ -8,6 +8,7 @@ import * as notifications from "./notifications";
 import * as fs from "fs";
 import * as path from "path";
 import bcrypt from "bcryptjs";
+import rateLimit from "express-rate-limit";
 
 interface LocationUpdate {
   userId: string;
@@ -78,21 +79,29 @@ function broadcastToRole(role: "client" | "driver" | "admin", message: object, s
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Rate limiter for auth endpoints — 10 attempts per 15 minutes per IP
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, error: "Trop de tentatives. Réessayez dans 15 minutes." },
+  });
+
   // Seed default admin account on first run
   (async () => {
     try {
+      const adminPassword = process.env.ADMIN_PASSWORD ?? "FAYAGE2026";
       const count = await storage.countAdmins();
       if (count === 0) {
-        const hash = await bcrypt.hash("FAYAGE2026", 12);
+        const hash = await bcrypt.hash(adminPassword, 12);
         await storage.createAdminAccount("admin", undefined, hash, true);
-        console.log("[SEED] Default admin created: username=admin password=FAYAGE2026");
+        console.log("[SEED] Default admin created");
       } else {
-        // Ensure the default admin password is up to date
         const existing = await storage.getAdminByUsername("admin");
         if (existing) {
-          const hash = await bcrypt.hash("FAYAGE2026", 12);
+          const hash = await bcrypt.hash(adminPassword, 12);
           await storage.updateAdminPassword(existing.id, hash);
-          console.log("[SEED] Default admin password updated to FAYAGE2026");
         }
       }
     } catch (e) {
@@ -1248,12 +1257,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Hash password before storing (skip if already bcrypt-hashed)
+      let passwordToStore = client.password as string | undefined;
+      if (passwordToStore && !passwordToStore.startsWith("$2")) {
+        passwordToStore = await bcrypt.hash(passwordToStore, 12);
+      }
+
       await storage.upsertClient({
         id: client.id,
         fullName: client.fullName,
         phone: client.phone,
         email: client.email,
-        password: client.password,
+        password: passwordToStore,
         avatarUrl: client.avatarUrl,
         rating: client.rating || 0,
       });
@@ -1282,7 +1297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/login", async (req, res) => {
+  app.post("/api/auth/login", authLimiter, async (req, res) => {
     try {
       const { phone, password } = req.body as { phone: string; password: string };
       
@@ -1290,10 +1305,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, error: "Phone and password required" });
       }
 
-      // Find account by phone + password (multiple accounts may share the same phone)
+      // Helper: verify password — supports both bcrypt hashes and legacy plaintext (auto-upgrades)
+      const verifyPassword = async (stored: string, candidate: string, upgradeHash: (h: string) => Promise<void>) => {
+        if (stored.startsWith("$2")) {
+          return bcrypt.compare(candidate, stored);
+        }
+        // Legacy plaintext — compare then silently upgrade to bcrypt
+        if (stored === candidate) {
+          const newHash = await bcrypt.hash(candidate, 12);
+          upgradeHash(newHash).catch(() => {});
+          return true;
+        }
+        return false;
+      };
+
       const matchingClients = await storage.getClientsByPhone(phone);
-      const client = matchingClients.find(c => c.password === password);
-      if (client) {
+      for (const client of matchingClients) {
+        if (!client.password) continue;
+        const ok = await verifyPassword(
+          client.password,
+          password,
+          (h) => storage.updateClientPasswordById(client.id, h),
+        );
+        if (!ok) continue;
         if (client.isBanned) {
           return res.status(403).json({ success: false, error: "Account is banned", reason: client.banReason });
         }
@@ -1314,21 +1348,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const matchingDrivers = await storage.getDriversByPhone(phone);
-      const driver = matchingDrivers.find(d => d.password === password);
-      if (driver) {
+      for (const driver of matchingDrivers) {
+        if (!driver.password) continue;
+        const ok = await verifyPassword(
+          driver.password,
+          password,
+          (h) => storage.updateDriverPasswordById(driver.id, h),
+        );
+        if (!ok) continue;
         if (driver.isBanned) {
           return res.status(403).json({ success: false, error: "Account is banned", reason: driver.banReason });
         }
-        
         let documents = null;
         if (driver.documents) {
           try {
             documents = typeof driver.documents === "string" ? JSON.parse(driver.documents) : driver.documents;
-          } catch (e) {
-            documents = null;
-          }
+          } catch (_) { documents = null; }
         }
-        
         return res.json({
           success: true,
           user: {
@@ -1441,16 +1477,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, error: "Please verify your code first" });
       }
 
+      // Hash the new password before storing
+      const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
       // Update password for client or driver
       const client = await storage.getClientByEmail(email);
       if (client) {
-        await storage.updateClientPassword(email, newPassword);
+        await storage.updateClientPassword(email, hashedNewPassword);
         return res.json({ success: true, message: "Password reset successfully", role: "client" });
       }
 
       const driver = await storage.getDriverByEmail(email);
       if (driver) {
-        await storage.updateDriverPassword(email, newPassword);
+        await storage.updateDriverPassword(email, hashedNewPassword);
         return res.json({ success: true, message: "Password reset successfully", role: "driver" });
       }
 
@@ -1509,12 +1548,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
 
+          // Hash password before storing (skip if already bcrypt-hashed)
+          let driverPasswordToStore = driver.password as string | undefined;
+          if (driverPasswordToStore && !driverPasswordToStore.startsWith("$2")) {
+            driverPasswordToStore = await bcrypt.hash(driverPasswordToStore, 12);
+          }
+
           await storage.upsertDriver({
             id: driver.id,
             fullName: driver.fullName,
             phone: driver.phone,
             email: driver.email,
-            password: driver.password,
+            password: driverPasswordToStore,
             nationalId: driver.nationalId,
             vehicleType: driver.vehicleType,
             verificationStatus: driver.verificationStatus,
