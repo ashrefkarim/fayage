@@ -462,7 +462,7 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
               // Payment confirmed by admin — update the order in state
               if (message.order) {
                 setRequests((prev) =>
-                  prev.map((r) => r.id === message.order.id ? { ...r, ...message.order } : r)
+                  prev.map((r) => r.id === message.order.id ? mapOrderToRequest(message.order) : r)
                 );
               }
               if (message.order?.id && message.message) {
@@ -477,7 +477,7 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
             case "PAYMENT_REJECTED_CLIENT":
               if (message.order) {
                 setRequests((prev) =>
-                  prev.map((r) => r.id === message.order.id ? { ...r, ...message.order } : r)
+                  prev.map((r) => r.id === message.order.id ? mapOrderToRequest(message.order) : r)
                 );
               }
               if (message.order?.id && message.message) {
@@ -492,7 +492,7 @@ export function RequestsProvider({ children }: { children: ReactNode }) {
             case "ORDER_PAID":
               if (message.order) {
                 setRequests((prev) =>
-                  prev.map((r) => r.id === message.order.id ? { ...r, ...message.order } : r)
+                  prev.map((r) => r.id === message.order.id ? mapOrderToRequest(message.order) : r)
                 );
               }
               break;
