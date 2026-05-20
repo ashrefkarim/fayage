@@ -178,8 +178,8 @@ function parseGoodsPhotos(photos: any): string[] | undefined {
       return undefined;
     }
   }
-  // Accept http, https and data: URIs (base64 embedded)
-  const validPhotos = photoArray.filter((url) => url && (url.startsWith("http") || url.startsWith("data:")));
+  // Filter out local file:// URLs that won't work remotely
+  const validPhotos = photoArray.filter((url) => url && url.startsWith("http"));
   return validPhotos.length > 0 ? validPhotos : undefined;
 }
 
