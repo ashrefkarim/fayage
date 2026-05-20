@@ -128,7 +128,22 @@ export default function RequestDetailsScreen() {
       const response = await fetch(url.toString());
       const data = await response.json();
       if (data.success) {
-        setOffers(data.offers || []);
+        const offers = data.offers || [];
+        // Enrich each offer with live driver rating from the stats endpoint
+        const enriched = await Promise.all(
+          offers.map(async (offer: any) => {
+            try {
+              const statsUrl = new URL(`/api/drivers/${offer.driverId}/stats`, getApiUrl());
+              const statsRes = await fetch(statsUrl.toString());
+              const statsData = await statsRes.json();
+              if (statsData.success && statsData.rating > 0) {
+                return { ...offer, driverRating: statsData.rating };
+              }
+            } catch {}
+            return offer;
+          })
+        );
+        setOffers(enriched);
       }
     } catch (error) {
       console.error("Failed to fetch offers:", error);
