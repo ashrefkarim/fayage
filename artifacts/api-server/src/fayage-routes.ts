@@ -203,10 +203,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Write file
       fs.writeFileSync(filePath, Buffer.from(base64Data, "base64"));
 
-      // Return the URL that can be accessed
-      const domain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || "localhost:5000";
-      const protocol = domain.includes("localhost") ? "http" : "https";
-      const photoUrl = `${protocol}://${domain}/uploads/${filename}`;
+      // Build a URL the mobile client can actually reach.
+      // Use the incoming request headers so it mirrors the domain the app connected to,
+      // regardless of whether we're on Railway, Replit, or localhost.
+      const proto =
+        (req.get("x-forwarded-proto") || req.protocol || "https").split(",")[0].trim();
+      const host =
+        req.get("x-forwarded-host") ||
+        process.env.RAILWAY_PUBLIC_DOMAIN ||
+        process.env.REPLIT_DEV_DOMAIN ||
+        process.env.REPLIT_DOMAINS?.split(",")[0] ||
+        req.get("host") ||
+        "localhost:5000";
+      // /api/uploads/ is routed through every proxy layer; /uploads/ may not be
+      const photoUrl = `${proto}://${host}/api/uploads/${filename}`;
 
       res.json({ success: true, url: photoUrl });
     } catch (error) {
