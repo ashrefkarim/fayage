@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/store-screenshots/"
+title = "Fayage Store Screenshots"
+version = "1.0.0"
+id = "artifacts/store-screenshots"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/store-screenshots/" ]
+localPort = 18082
+
+[services.development]
+run = "pnpm --filter @workspace/store-screenshots run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/store-screenshots", "run", "build" ]
+publicDir = "artifacts/store-screenshots/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18082"
+BASE_PATH = "/store-screenshots/"
