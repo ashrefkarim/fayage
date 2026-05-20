@@ -166,12 +166,33 @@ export default function DriverActiveScreen() {
   const handleUpdateStatus = async (request: TransportRequest) => {
     const nextStatus = getNextStatus(request.status);
     if (!nextStatus) return;
+
     if (request.status === "in_transit") {
       navigation.navigate("DeliveryConfirmation", { requestId: request.id });
       return;
     }
-    await updateRequest(request.id, { status: nextStatus });
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    const actionLabel = getStatusAction(request.status);
+
+    const confirmMessages: Partial<Record<RequestStatus, string>> = {
+      accepted: "Confirmez-vous être arrivé au point de ramassage ?",
+      paid:     "Confirmez-vous être arrivé au point de ramassage ?",
+      driver_arrived: "Confirmez-vous avoir récupéré la marchandise ?",
+      pickup:   "Confirmez-vous être en transit avec la marchandise ?",
+    };
+    const message = confirmMessages[request.status as keyof typeof confirmMessages] ?? `Confirmer : ${actionLabel} ?`;
+
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert(actionLabel, message, [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Confirmer",
+        onPress: async () => {
+          await updateRequest(request.id, { status: nextStatus });
+          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        },
+      },
+    ]);
   };
 
   const handleCancelOrder = async (request: TransportRequest) => {
