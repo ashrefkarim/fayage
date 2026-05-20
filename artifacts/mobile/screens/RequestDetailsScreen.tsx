@@ -656,23 +656,6 @@ export default function RequestDetailsScreen() {
           </View>
           <ThemedText>{request.goodsDescription}</ThemedText>
           
-          {request.goodsPhotos && request.goodsPhotos.length > 0 ? (
-            <View style={styles.goodsPhotosSection}>
-              <ThemedText style={[styles.descriptionLabel, { color: theme.textSecondary, marginTop: Spacing.md }]}>
-                {t("photoOfGoods")} ({request.goodsPhotos.length})
-              </ThemedText>
-              <View style={styles.goodsPhotosRow}>
-                {request.goodsPhotos.map((photo: string, index: number) => (
-                  <Image
-                    key={index}
-                    source={{ uri: photo }}
-                    style={styles.goodsPhotoThumbnail}
-                    resizeMode="cover"
-                  />
-                ))}
-              </View>
-            </View>
-          ) : null}
         </View>
 
         {request.status === "delivered" ? (
