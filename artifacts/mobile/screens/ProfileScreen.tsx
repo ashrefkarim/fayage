@@ -45,7 +45,7 @@ export default function ProfileScreen() {
     if (user?.role === "driver" && user?.id) {
       const fetchDriverStats = async () => {
         try {
-          const response = await fetch(`${getApiUrl()}/api/drivers/${user.id}/stats`);
+          const response = await fetch(`${getApiUrl()}api/drivers/${user.id}/stats`);
           const data = await response.json();
           if (data.success) {
             setDriverStats({
