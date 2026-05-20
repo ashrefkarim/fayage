@@ -50,8 +50,16 @@ export function OfferDetailModal({
   const backdropAnim = useRef(new Animated.Value(0)).current;
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
 
+  // Keep the last non-null request so content stays visible during the closing animation
+  const lastRequest = useRef<TransportRequest | null>(null);
+  if (request) lastRequest.current = request;
+  const req = lastRequest.current;
+
   useEffect(() => {
     if (visible) {
+      // Reset position before animating in
+      slideAnim.setValue(SHEET_HEIGHT);
+      backdropAnim.setValue(0);
       Animated.parallel([
         Animated.spring(slideAnim, {
           toValue: 0,
@@ -77,39 +85,42 @@ export function OfferDetailModal({
           duration: 200,
           useNativeDriver: true,
         }),
-      ]).start();
-      setSelectedPhoto(null);
+      ]).start(() => setSelectedPhoto(null));
     }
   }, [visible]);
 
-  if (!request) return null;
-
-  const weight = request.estimatedWeight || 0;
-  const { earning: driverNet, rate } = calculateDriverEarning(request.proposedPrice || 0, weight);
+  const weight = req?.estimatedWeight || 0;
+  const { earning: driverNet, rate } = calculateDriverEarning(req?.proposedPrice || 0, weight);
   const driverNetOffered = offeredPrice
     ? calculateDriverEarning(offeredPrice, weight).earning
     : undefined;
 
-  const vehicle = VehicleTypes.find((v) => v.id === request.vehicleType);
+  const vehicle = VehicleTypes.find((v) => v.id === req?.vehicleType);
   const vehicleLabel = vehicle
     ? language === "ar" ? vehicle.labelAr : vehicle.labelFr
-    : request.vehicleType;
+    : req?.vehicleType ?? "";
 
-  const deliveryOption = DeliveryOptions.find((d) => d.id === request.deliveryOption);
+  const deliveryOption = DeliveryOptions.find((d) => d.id === req?.deliveryOption);
   const optionLabel = deliveryOption
     ? language === "ar" ? deliveryOption.labelAr : deliveryOption.labelFr
-    : request.deliveryOption;
+    : req?.deliveryOption ?? "";
 
   const goodsPhotos: string[] = (() => {
-    if (!request.goodsPhotos) return [];
-    if (Array.isArray(request.goodsPhotos))
-      return request.goodsPhotos.filter((u) => u?.startsWith("http"));
-    try {
-      const p = JSON.parse(request.goodsPhotos as any);
-      return Array.isArray(p) ? p.filter((u: string) => u?.startsWith("http")) : [];
-    } catch {
-      return [];
+    if (!req?.goodsPhotos) return [];
+    const raw = req.goodsPhotos;
+    let arr: string[] = [];
+    if (Array.isArray(raw)) {
+      arr = raw;
+    } else if (typeof raw === "string") {
+      try {
+        const p = JSON.parse(raw);
+        arr = Array.isArray(p) ? p : [];
+      } catch {
+        return [];
+      }
     }
+    // Accept any valid URL (http or https)
+    return arr.filter((u) => typeof u === "string" && (u.startsWith("http://") || u.startsWith("https://")));
   })();
 
   const handleAcceptAndClose = () => {
@@ -167,22 +178,22 @@ export function OfferDetailModal({
             </View>
 
             <View style={[styles.clientRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-              {request.clientAvatarUrl ? (
-                <Image source={{ uri: request.clientAvatarUrl }} style={styles.avatar} />
+              {req?.clientAvatarUrl ? (
+                <Image source={{ uri: req.clientAvatarUrl }} style={styles.avatar} />
               ) : (
                 <View style={styles.avatarFallback}>
                   <Icon name="user" size={22} color={theme.primary} />
                 </View>
               )}
               <View style={{ flex: 1, alignItems: isRTL ? "flex-end" : "flex-start" }}>
-                <ThemedText style={styles.clientName}>{request.clientName}</ThemedText>
-                {request.clientRating > 0 ? (
+                <ThemedText style={styles.clientName}>{req?.clientName}</ThemedText>
+                {(req?.clientRating ?? 0) > 0 ? (
                   <View
                     style={[styles.ratingRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}
                   >
                     <Icon name="star" size={12} color="#FCD34D" />
                     <ThemedText style={styles.ratingText}>
-                      {request.clientRating.toFixed(1)}
+                      {req!.clientRating.toFixed(1)}
                     </ThemedText>
                   </View>
                 ) : null}
@@ -190,7 +201,7 @@ export function OfferDetailModal({
               <View style={styles.distanceBadge}>
                 <Icon name="navigation" size={12} color={theme.primary} />
                 <ThemedText style={[styles.distanceText, { color: theme.primary }]}>
-                  {request.distance} km
+                  {req?.distance} km
                 </ThemedText>
               </View>
             </View>
@@ -217,7 +228,7 @@ export function OfferDetailModal({
                     style={[styles.routeAddr, { textAlign: isRTL ? "right" : "left" }]}
                     numberOfLines={2}
                   >
-                    {request.pickupAddress}
+                    {req?.pickupAddress}
                   </ThemedText>
                 </View>
               </View>
@@ -250,7 +261,7 @@ export function OfferDetailModal({
                     style={[styles.routeAddr, { textAlign: isRTL ? "right" : "left" }]}
                     numberOfLines={2}
                   >
-                    {request.deliveryAddress}
+                    {req?.deliveryAddress}
                   </ThemedText>
                 </View>
               </View>
@@ -267,7 +278,7 @@ export function OfferDetailModal({
               </View>
               <View style={[styles.chip, { backgroundColor: theme.backgroundDefault }]}>
                 <Icon name="navigation" size={15} color={theme.primary} />
-                <ThemedText style={styles.chipText}>{request.distance} km</ThemedText>
+                <ThemedText style={styles.chipText}>{req?.distance} km</ThemedText>
               </View>
             </View>
 
@@ -283,7 +294,7 @@ export function OfferDetailModal({
               <ThemedText
                 style={[styles.goodsText, { textAlign: isRTL ? "right" : "left" }]}
               >
-                {request.goodsDescription}
+                {req?.goodsDescription}
               </ThemedText>
             </View>
 

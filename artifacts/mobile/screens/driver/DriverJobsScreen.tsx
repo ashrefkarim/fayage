@@ -225,9 +225,9 @@ export default function DriverJobsScreen() {
   const renderItem = ({ item }: { item: TransportRequest }) => {
     const offer = getOfferForOrder(item.id);
     return (
-      <Pressable
+      <TouchableOpacity
+        activeOpacity={0.97}
         onPress={() => setDetailRequest(item)}
-        style={({ pressed }) => ({ opacity: pressed ? 0.96 : 1 })}
       >
         <JobCard
           request={item}
@@ -236,7 +236,7 @@ export default function DriverJobsScreen() {
           hasOffered={!!offer}
           offeredPrice={offer?.offeredPrice}
         />
-      </Pressable>
+      </TouchableOpacity>
     );
   };
 
