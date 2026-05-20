@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, StyleSheet, Pressable, Image, ScrollView, Platform, ActivityIndicator, Animated, Alert } from "react-native";
+import { View, StyleSheet, Pressable, Image, ScrollView, Platform, ActivityIndicator, Animated, Alert, TouchableOpacity, Linking } from "react-native";
 import PermissionModal, { PermissionType } from "@/components/PermissionModal";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -36,6 +36,7 @@ interface FormErrors {
   drivingLicenseBack?: string;
   vehicleRegistrationFront?: string;
   vehicleRegistrationBack?: string;
+  terms?: string;
 }
 
 interface AiWarning {
@@ -74,6 +75,7 @@ export default function DriverRegistrationScreen() {
   const [documents, setDocuments] = useState<DriverDocuments>({});
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [permissionModal, setPermissionModal] = useState<{ visible: boolean; type: PermissionType }>({ visible: false, type: "gallery" });
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -246,6 +248,7 @@ export default function DriverRegistrationScreen() {
   const validateStep4 = (): boolean => {
     const newErrors: FormErrors = {};
     if (!vehicleType) newErrors.vehicleType = t("selectVehicleType");
+    if (!acceptedTerms) newErrors.terms = "Veuillez accepter les conditions d'utilisation et la politique de confidentialité";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -1170,6 +1173,45 @@ export default function DriverRegistrationScreen() {
           {errors.vehicleType}
         </ThemedText>
       ) : null}
+
+      {/* ─── Terms & Conditions ─── */}
+      <TouchableOpacity
+        onPress={() => setAcceptedTerms(p => !p)}
+        activeOpacity={0.8}
+        style={{ flexDirection: "row", alignItems: "flex-start", gap: 10, marginTop: Spacing.lg }}
+      >
+        <View style={{
+          width: 22, height: 22, borderRadius: 6, borderWidth: 2,
+          borderColor: acceptedTerms ? "#059669" : (errors.terms ? theme.error : theme.border),
+          backgroundColor: acceptedTerms ? "#059669" : "transparent",
+          alignItems: "center", justifyContent: "center", marginTop: 1, flexShrink: 0,
+        }}>
+          {acceptedTerms ? <Icon name="check" size={13} color="#fff" /> : null}
+        </View>
+        <View style={{ flex: 1 }}>
+          <ThemedText style={{ fontSize: 13, color: theme.textSecondary, lineHeight: 19 }}>
+            {"J'accepte les "}
+            <ThemedText
+              onPress={() => Linking.openURL("https://fayage.app/terms")}
+              style={{ fontSize: 13, color: "#059669", fontWeight: "600" }}
+            >
+              conditions d'utilisation
+            </ThemedText>
+            {" et la "}
+            <ThemedText
+              onPress={() => Linking.openURL("https://fayage.app/privacy")}
+              style={{ fontSize: 13, color: "#059669", fontWeight: "600" }}
+            >
+              politique de confidentialité
+            </ThemedText>
+          </ThemedText>
+          {errors.terms ? (
+            <ThemedText style={{ fontSize: 12, color: theme.error, marginTop: 4 }}>
+              {errors.terms}
+            </ThemedText>
+          ) : null}
+        </View>
+      </TouchableOpacity>
     </View>
   );
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, StyleSheet, Image, Pressable, Dimensions, Platform, Animated } from "react-native";
+import { View, StyleSheet, Image, Pressable, Dimensions, Platform, Animated, TouchableOpacity, Linking } from "react-native";
 import PermissionModal from "@/components/PermissionModal";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -53,6 +53,7 @@ export default function AuthScreen() {
   const [selectedRole, setSelectedRole] = useState<UserRole>("client");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -308,6 +309,10 @@ export default function AuthScreen() {
   const handleSignup = async () => {
     if (!fullName || !phone || !email || !password) {
       setError(t("fillAllFields"));
+      return;
+    }
+    if (!acceptedTerms) {
+      setError("Veuillez accepter les conditions d'utilisation et la politique de confidentialité");
       return;
     }
     setIsLoading(true);
@@ -679,6 +684,40 @@ export default function AuthScreen() {
         />
         {/* Referral code field hidden temporarily */}
       </View>
+
+      {/* ─── Terms & Conditions ─── */}
+      <TouchableOpacity
+        onPress={() => setAcceptedTerms(p => !p)}
+        activeOpacity={0.8}
+        style={{ flexDirection: "row", alignItems: "flex-start", gap: 10, marginBottom: 4 }}
+      >
+        <View style={{
+          width: 22, height: 22, borderRadius: 6, borderWidth: 2,
+          borderColor: acceptedTerms ? theme.primary : theme.border,
+          backgroundColor: acceptedTerms ? theme.primary : "transparent",
+          alignItems: "center", justifyContent: "center", marginTop: 1, flexShrink: 0,
+        }}>
+          {acceptedTerms ? <Icon name="check" size={13} color="#fff" /> : null}
+        </View>
+        <View style={{ flex: 1 }}>
+          <ThemedText style={{ fontSize: 13, color: theme.textSecondary, lineHeight: 19 }}>
+            {"J'accepte les "}
+            <ThemedText
+              onPress={() => Linking.openURL("https://fayage.app/terms")}
+              style={{ fontSize: 13, color: theme.primary, fontWeight: "600" }}
+            >
+              conditions d'utilisation
+            </ThemedText>
+            {" et la "}
+            <ThemedText
+              onPress={() => Linking.openURL("https://fayage.app/privacy")}
+              style={{ fontSize: 13, color: theme.primary, fontWeight: "600" }}
+            >
+              politique de confidentialité
+            </ThemedText>
+          </ThemedText>
+        </View>
+      </TouchableOpacity>
 
       <Button onPress={handleSignup} disabled={isLoading}>
         {isLoading ? "..." : t("createAccount")}
