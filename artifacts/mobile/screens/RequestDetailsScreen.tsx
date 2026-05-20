@@ -770,11 +770,22 @@ export default function RequestDetailsScreen() {
                       <View style={[styles.driverOfferInfo, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
                         <ThemedText style={styles.driverOfferName}>{offer.driverName}</ThemedText>
                         <View style={[styles.driverOfferRatingRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-                          <Icon name="star" size={12} color="#F59E0B" />
-                          <ThemedText style={styles.driverOfferRatingNum}>
-                            {(offer.driverRating || 0).toFixed(1)}
-                          </ThemedText>
-                          <ThemedText style={[styles.driverOfferDot, { color: theme.textSecondary }]}>·</ThemedText>
+                          {offer.driverRating && offer.driverRating > 0 ? (
+                            <>
+                              <Icon name="star" size={12} color="#F59E0B" />
+                              <ThemedText style={styles.driverOfferRatingNum}>
+                                {offer.driverRating.toFixed(1)}
+                              </ThemedText>
+                              <ThemedText style={[styles.driverOfferDot, { color: theme.textSecondary }]}>·</ThemedText>
+                            </>
+                          ) : (
+                            <>
+                              <View style={{ backgroundColor: "#10B98118", borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                                <ThemedText style={{ fontSize: 10, fontWeight: "700", color: "#10B981" }}>NOUVEAU</ThemedText>
+                              </View>
+                              <ThemedText style={[styles.driverOfferDot, { color: theme.textSecondary }]}>·</ThemedText>
+                            </>
+                          )}
                           <ThemedText style={styles.driverOfferAvailableLabel}>Disponible</ThemedText>
                         </View>
                       </View>
