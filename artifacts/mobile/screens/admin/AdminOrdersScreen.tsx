@@ -31,8 +31,10 @@ interface Order {
   deliveryAddress: string;
   vehicleType: string;
   proposedPrice: number;
+  finalPrice?: number;
   status: string;
   createdAt: string;
+  paymentReferenceCode?: string;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -74,7 +76,8 @@ export default function AdminOrdersScreen() {
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${getApiUrl()}/api/orders`);
+      const url = new URL("/api/orders", getApiUrl());
+      const response = await fetch(url.toString());
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
@@ -104,6 +107,7 @@ export default function AdminOrdersScreen() {
       filtered = filtered.filter(
         (order) =>
           order.id.toLowerCase().includes(query) ||
+          order.paymentReferenceCode?.toLowerCase().includes(query) ||
           order.clientName?.toLowerCase().includes(query) ||
           order.clientPhone?.includes(query) ||
           order.driverName?.toLowerCase().includes(query) ||
@@ -145,9 +149,18 @@ export default function AdminOrdersScreen() {
     <Card elevation={1} style={styles.orderCard}>
       <View style={[styles.orderHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
         <View style={styles.orderIdContainer}>
-          <ThemedText style={[styles.orderId, { color: theme.textSecondary }]}>
-            #{item.id.slice(0, 8)}
-          </ThemedText>
+          <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 8 }}>
+            <ThemedText style={[styles.orderId, { color: theme.textSecondary }]}>
+              #{item.id.slice(0, 8)}
+            </ThemedText>
+            {item.paymentReferenceCode ? (
+              <View style={[styles.refBadge, { backgroundColor: theme.primary + "18" }]}>
+                <ThemedText style={[styles.refCode, { color: theme.primary }]}>
+                  {item.paymentReferenceCode}
+                </ThemedText>
+              </View>
+            ) : null}
+          </View>
           <View
             style={[
               styles.statusBadge,
@@ -383,6 +396,16 @@ const styles = StyleSheet.create({
   orderId: {
     fontSize: 12,
     fontWeight: "600",
+  },
+  refBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.full,
+  },
+  refCode: {
+    fontSize: 11,
+    fontFamily: "Poppins_700Bold",
+    letterSpacing: 0.5,
   },
   statusBadge: {
     flexDirection: "row",
