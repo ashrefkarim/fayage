@@ -65,7 +65,7 @@ export default function AuthScreen() {
   const glowAnim = useRef(new Animated.Value(0)).current;
   const logoScaleAnim = useRef(new Animated.Value(0.85)).current;
   const contentSlideAnim = useRef(new Animated.Value(30)).current;
-  const contentOpacityAnim = useRef(new Animated.Value(0)).current;
+  const contentOpacityAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (mode !== "welcome") return;
@@ -313,15 +313,8 @@ export default function AuthScreen() {
   };
 
   const renderWelcome = () => {
-    const glowOpacity = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.7] });
-    const glowScale = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.18] });
-
     return (
       <View style={styles.welcomeRoot}>
-        {/* Animated glow layers */}
-        <Animated.View style={[styles.glowOuter, { opacity: glowOpacity, transform: [{ scale: glowScale }] }]} />
-        <Animated.View style={[styles.glowMid, { opacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.2, 0.45] }), transform: [{ scale: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] }) }] }]} />
-
         {/* Language toggle */}
         <View style={[styles.welcomeTopBar, { paddingTop: insets.top + 16 }]}>
           <View />
@@ -329,18 +322,16 @@ export default function AuthScreen() {
         </View>
 
         {/* Visual hero */}
-        <View style={styles.welcomeHero}>
-          <Animated.View style={[styles.logoRingOuter, { transform: [{ scale: logoScaleAnim }] }]}>
-            <View style={styles.logoRingMid}>
-              <Pressable onPress={handleLogoTap} style={styles.logoDisc}>
-                <Image
-                  source={appLogo && !logoLoadError ? { uri: appLogo } : require("../assets/images/icon.png")}
-                  style={styles.logoImg}
-                  resizeMode="contain"
-                  onError={() => setLogoLoadError(true)}
-                />
-              </Pressable>
-            </View>
+        <View style={[styles.welcomeHero, { paddingTop: insets.top + 56 }]}>
+          <Animated.View style={{ transform: [{ scale: logoScaleAnim }] }}>
+            <Pressable onPress={handleLogoTap} style={styles.logoDisc}>
+              <Image
+                source={appLogo && !logoLoadError ? { uri: appLogo } : require("../assets/images/icon.png")}
+                style={styles.logoImg}
+                resizeMode="contain"
+                onError={() => setLogoLoadError(true)}
+              />
+            </Pressable>
           </Animated.View>
         </View>
 
@@ -348,7 +339,7 @@ export default function AuthScreen() {
         <Animated.View
           style={[
             styles.welcomeCard,
-            { paddingBottom: insets.bottom + 36, opacity: contentOpacityAnim, transform: [{ translateY: contentSlideAnim }] },
+            { paddingBottom: Math.max(insets.bottom + 20, 32), opacity: contentOpacityAnim, transform: [{ translateY: contentSlideAnim }] },
           ]}
         >
           <View style={styles.welcomeTextBlock}>
@@ -845,24 +836,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#060E1F",
     overflow: "hidden",
   },
-  glowOuter: {
-    position: "absolute",
-    width: 420,
-    height: 420,
-    borderRadius: 210,
-    backgroundColor: "#1565C0",
-    alignSelf: "center",
-    top: "18%",
-  },
-  glowMid: {
-    position: "absolute",
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: "#42A5F5",
-    alignSelf: "center",
-    top: "26%",
-  },
   welcomeTopBar: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -875,6 +848,7 @@ const styles = StyleSheet.create({
   },
   welcomeHero: {
     flex: 1,
+    minHeight: 260,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -917,9 +891,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
-    paddingTop: 32,
+    paddingTop: 24,
     paddingHorizontal: 28,
-    gap: 20,
+    gap: 14,
     ...Platform.select({
       ios: { shadowColor: "#000", shadowOffset: { width: 0, height: -6 }, shadowOpacity: 0.15, shadowRadius: 20 },
       android: { elevation: 16 },
