@@ -358,7 +358,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/orders/:id/offers", async (req, res) => {
     try {
       const offers = await storage.getDriverOffersForOrder(req.params.id);
-      res.json({ success: true, offers });
+      // Enrich each offer with the driver's live rating from the DB
+      const enriched = await Promise.all(
+        offers.map(async (offer) => {
+          const driver = await storage.getDriverById(offer.driverId);
+          return {
+            ...offer,
+            driverRating: driver?.rating ?? offer.driverRating ?? 0,
+          };
+        })
+      );
+      res.json({ success: true, offers: enriched });
     } catch (error) {
       console.error("Error fetching offers:", error);
       res.status(500).json({ success: false, error: "Failed to fetch offers" });
