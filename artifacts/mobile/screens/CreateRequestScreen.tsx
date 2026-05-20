@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TextInput, Pressable, Platform, Modal, ScrollView, ActivityIndicator, Image, TouchableOpacity, Alert } from "react-native";
-import * as ImagePicker from "expo-image-picker";
+import { View, StyleSheet, TextInput, Pressable, Platform, Modal, ScrollView, ActivityIndicator, Image, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderPadding } from "@/hooks/useHeaderPadding";
@@ -74,76 +73,6 @@ export default function CreateRequestScreen() {
   };
 
   const [clientPrice, setClientPrice] = useState("");
-  const [goodsPhotoUris, setGoodsPhotoUris] = useState<string[]>([]);
-  const [goodsPhotosBase64, setGoodsPhotosBase64] = useState<string[]>([]);
-  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
-
-  const pickGoodsPhoto = async (source: "camera" | "library") => {
-    try {
-      let result: ImagePicker.ImagePickerResult;
-      if (source === "camera") {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert("", "Autorisation caméra requise");
-          return;
-        }
-        result = await ImagePicker.launchCameraAsync({
-          quality: 0.7,
-          base64: true,
-          allowsEditing: false,
-        });
-      } else {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert("", "Autorisation galerie requise");
-          return;
-        }
-        result = await ImagePicker.launchImageLibraryAsync({
-          quality: 0.7,
-          base64: true,
-          allowsEditing: false,
-          allowsMultipleSelection: false,
-        });
-      }
-      if (!result.canceled && result.assets[0]) {
-        const asset = result.assets[0];
-        if (goodsPhotoUris.length >= 4) {
-          Alert.alert("", "Maximum 4 photos autorisées");
-          return;
-        }
-        setGoodsPhotoUris((prev) => [...prev, asset.uri]);
-        setGoodsPhotosBase64((prev) => [...prev, asset.base64 || ""]);
-      }
-    } catch (e) {
-      console.error("Photo picker error:", e);
-    }
-  };
-
-  const removeGoodsPhoto = (index: number) => {
-    setGoodsPhotoUris((prev) => prev.filter((_, i) => i !== index));
-    setGoodsPhotosBase64((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const uploadGoodsPhotos = async (): Promise<string[]> => {
-    if (goodsPhotosBase64.length === 0) return [];
-    const baseUrl = getApiUrl();
-    const urls: string[] = [];
-    for (const b64 of goodsPhotosBase64) {
-      if (!b64) continue;
-      try {
-        const res = await fetch(`${baseUrl}api/upload-photo`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ base64: b64, mimeType: "image/jpeg" }),
-        });
-        const data = await res.json();
-        if (data.success && data.url) urls.push(data.url);
-      } catch {
-        // skip failed uploads silently
-      }
-    }
-    return urls;
-  };
 
   const handleSubmit = async () => {
     if (!user || !pickupAddress || !deliveryAddress || !goodsDescription) {
@@ -153,10 +82,6 @@ export default function CreateRequestScreen() {
 
     setIsSubmitting(true);
     try {
-      setIsUploadingPhotos(goodsPhotosBase64.length > 0);
-      const uploadedPhotoUrls = await uploadGoodsPhotos();
-      setIsUploadingPhotos(false);
-
       const price = parseInt(clientPrice) || 0;
       await createRequest({
         clientId: user.id,
@@ -174,7 +99,6 @@ export default function CreateRequestScreen() {
         proposedPrice: price,
         scheduledFor: isScheduled ? scheduledDate : undefined,
         preferredDriverId: selectedDriverId,
-        goodsPhotos: uploadedPhotoUrls.length > 0 ? uploadedPhotoUrls : undefined,
       });
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       navigation.goBack();
@@ -401,96 +325,6 @@ export default function CreateRequestScreen() {
             </Pressable>
           </View>
         </View>
-      </View>
-
-      {/* ─── Photos de marchandises (optionnel) ─── */}
-      <View style={[styles.card, { backgroundColor: theme.backgroundDefault, gap: Spacing.md }]}>
-        <View style={[styles.photoSectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-          <View style={{ flex: 1, alignItems: isRTL ? "flex-end" : "flex-start" }}>
-            <View style={[styles.photoSectionTitleRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-              <Icon name="image" size={16} color="#0EA5E9" />
-              <ThemedText style={styles.photoSectionTitle}>Photos de la marchandise</ThemedText>
-              <View style={[styles.optionalBadge, { backgroundColor: theme.backgroundSecondary }]}>
-                <ThemedText style={[styles.optionalBadgeText, { color: theme.textSecondary }]}>Optionnel</ThemedText>
-              </View>
-            </View>
-            <ThemedText style={[styles.photoSectionSub, { color: theme.textSecondary, textAlign: isRTL ? "right" : "left" }]}>
-              Aidez le chauffeur à identifier vos colis (max 4)
-            </ThemedText>
-          </View>
-        </View>
-
-        {goodsPhotoUris.length > 0 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 10, paddingVertical: 4 }}
-          >
-            {goodsPhotoUris.map((uri, idx) => (
-              <View key={idx} style={styles.photoThumbWrap}>
-                <Image source={{ uri }} style={styles.photoThumb} />
-                <TouchableOpacity
-                  style={styles.photoRemoveBtn}
-                  onPress={() => removeGoodsPhoto(idx)}
-                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-                >
-                  <Icon name="x" size={12} color="#FFFFFF" />
-                </TouchableOpacity>
-              </View>
-            ))}
-            {goodsPhotoUris.length < 4 ? (
-              <TouchableOpacity
-                onPress={() => pickGoodsPhoto("library")}
-                style={[styles.addPhotoThumb, { backgroundColor: "#0EA5E915", borderColor: "#0EA5E940" }]}
-              >
-                <Icon name="plus" size={22} color="#0EA5E9" />
-              </TouchableOpacity>
-            ) : null}
-          </ScrollView>
-        ) : null}
-
-        {goodsPhotoUris.length === 0 ? (
-          <View style={[styles.photoPickerRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-            <TouchableOpacity
-              onPress={() => pickGoodsPhoto("camera")}
-              style={[styles.photoPickerBtn, { backgroundColor: "#0EA5E912", borderColor: "#0EA5E935" }]}
-              activeOpacity={0.75}
-            >
-              <Icon name="camera" size={20} color="#0EA5E9" />
-              <ThemedText style={[styles.photoPickerBtnText, { color: "#0EA5E9" }]}>Caméra</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => pickGoodsPhoto("library")}
-              style={[styles.photoPickerBtn, { backgroundColor: "#0EA5E912", borderColor: "#0EA5E935" }]}
-              activeOpacity={0.75}
-            >
-              <Icon name="image" size={20} color="#0EA5E9" />
-              <ThemedText style={[styles.photoPickerBtnText, { color: "#0EA5E9" }]}>Galerie</ThemedText>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={[styles.photoPickerRow, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
-            <TouchableOpacity
-              onPress={() => pickGoodsPhoto("camera")}
-              style={[styles.photoPickerBtnSmall, { backgroundColor: theme.backgroundSecondary }]}
-              activeOpacity={0.75}
-            >
-              <Icon name="camera" size={16} color={theme.textSecondary} />
-              <ThemedText style={[styles.photoPickerBtnSmallText, { color: theme.textSecondary }]}>Caméra</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => pickGoodsPhoto("library")}
-              style={[styles.photoPickerBtnSmall, { backgroundColor: theme.backgroundSecondary }]}
-              activeOpacity={0.75}
-            >
-              <Icon name="image" size={16} color={theme.textSecondary} />
-              <ThemedText style={[styles.photoPickerBtnSmallText, { color: theme.textSecondary }]}>Galerie</ThemedText>
-            </TouchableOpacity>
-            <ThemedText style={[styles.photoCount, { color: theme.textSecondary }]}>
-              {goodsPhotoUris.length}/4
-            </ThemedText>
-          </View>
-        )}
       </View>
 
       {/* ─── 4. Option de livraison ─── */}
@@ -829,7 +663,7 @@ export default function CreateRequestScreen() {
                   <View style={{ flexDirection: "row", alignItems: "center", gap: Spacing.sm }}>
                     <ActivityIndicator size="small" color="#FFFFFF" />
                     <ThemedText style={{ color: "#FFFFFF", fontWeight: "600", fontSize: 14 }}>
-                      {isUploadingPhotos ? "Envoi des photos..." : "Envoi en cours..."}
+                      Envoi en cours...
                     </ThemedText>
                   </View>
                 ) : (
@@ -1023,60 +857,4 @@ const styles = StyleSheet.create({
   /* Legacy — keep for checkbox reuse */
   checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, alignItems: "center", justifyContent: "center" },
 
-  /* Goods photos */
-  photoSectionHeader: { alignItems: "flex-start" },
-  photoSectionTitleRow: { alignItems: "center", gap: 7, marginBottom: 4 },
-  photoSectionTitle: { fontSize: 14, fontWeight: "700" },
-  optionalBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
-  optionalBadgeText: { fontSize: 10, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.4 },
-  photoSectionSub: { fontSize: 12, marginTop: 2 },
-  photoPickerRow: { gap: Spacing.sm },
-  photoPickerBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    height: 52,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1.5,
-  },
-  photoPickerBtnText: { fontSize: 14, fontWeight: "700" },
-  photoPickerBtnSmall: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: BorderRadius.md,
-  },
-  photoPickerBtnSmallText: { fontSize: 13, fontWeight: "600" },
-  photoCount: { fontSize: 12, fontWeight: "600", marginLeft: "auto" },
-  photoThumbWrap: { position: "relative", borderRadius: 12, overflow: "visible" },
-  photoThumb: { width: 80, height: 80, borderRadius: 12 },
-  photoRemoveBtn: {
-    position: "absolute",
-    top: -6,
-    right: -6,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "#EF4444",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  addPhotoThumb: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderStyle: "dashed",
-    alignItems: "center",
-    justifyContent: "center",
-  },
 });
