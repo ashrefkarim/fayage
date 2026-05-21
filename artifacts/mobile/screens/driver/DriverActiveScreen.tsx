@@ -49,6 +49,21 @@ export default function DriverActiveScreen() {
 
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [quickMsgRequest, setQuickMsgRequest] = useState<TransportRequest | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  // Refresh clock every 30 seconds so the button unlocks automatically when scheduled time arrives
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Returns true if this order is scheduled AND the pickup window hasn't opened yet.
+  // Only blocks the very first action (accepted → driver_arrived / paid → driver_arrived).
+  const isScheduleLocked = (item: TransportRequest): boolean => {
+    if (!item.scheduledFor) return false;
+    if (item.status !== "accepted" && item.status !== "paid") return false;
+    return new Date(item.scheduledFor).getTime() > now;
+  };
 
   const fetchUnreadCounts = useCallback(async () => {
     if (!user?.id || activeRequests.length === 0) return;
@@ -465,22 +480,42 @@ export default function DriverActiveScreen() {
 
           {/* Main action button */}
           {nextStatus ? (
-            <Pressable
-              onPress={() => handleUpdateStatus(item)}
-              style={({ pressed }) => [styles.mainBtn, { opacity: pressed ? 0.92 : 1 }]}
-            >
-              <LinearGradient
-                colors={["#10B981", "#059669"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.mainBtnGradient}
+            isScheduleLocked(item) ? (
+              <View style={styles.lockedBtn}>
+                <Icon name="lock" size={18} color="#92400E" />
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={styles.lockedBtnTitle}>
+                    {t("scheduledDelivery")}
+                  </ThemedText>
+                  <ThemedText style={styles.lockedBtnSub} numberOfLines={2}>
+                    {(() => {
+                      const locale = language === "ar" ? "ar-MA" : "fr-FR";
+                      const d = new Date(item.scheduledFor!);
+                      const day = d.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" });
+                      const time = d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+                      return `${t("scheduledFor")} ${day} ${t("scheduledDeliveryAt")} ${time}`;
+                    })()}
+                  </ThemedText>
+                </View>
+              </View>
+            ) : (
+              <Pressable
+                onPress={() => handleUpdateStatus(item)}
+                style={({ pressed }) => [styles.mainBtn, { opacity: pressed ? 0.92 : 1 }]}
               >
-                <Icon name="check-circle" size={22} color="#FFFFFF" />
-                <ThemedText style={styles.mainBtnText} numberOfLines={1}>
-                  {getStatusAction(item.status)}
-                </ThemedText>
-              </LinearGradient>
-            </Pressable>
+                <LinearGradient
+                  colors={["#10B981", "#059669"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.mainBtnGradient}
+                >
+                  <Icon name="check-circle" size={22} color="#FFFFFF" />
+                  <ThemedText style={styles.mainBtnText} numberOfLines={1}>
+                    {getStatusAction(item.status)}
+                  </ThemedText>
+                </LinearGradient>
+              </Pressable>
+            )
           ) : null}
         </View>
       </View>
@@ -789,5 +824,28 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
     letterSpacing: 0.3,
+  },
+  lockedBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#FEF3C7",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: "#F59E0B40",
+  },
+  lockedBtnTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#92400E",
+    marginBottom: 2,
+  },
+  lockedBtnSub: {
+    fontSize: 11,
+    color: "#B45309",
+    lineHeight: 15,
   },
 });
