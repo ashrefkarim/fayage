@@ -42,7 +42,7 @@ export function JobCard({
   offeredPrice,
 }: JobCardProps) {
   const { theme } = useTheme();
-  const { t, isRTL } = useLanguage();
+  const { t, language, isRTL } = useLanguage();
 
   const weight = request.estimatedWeight || 0;
   const { earning: driverNet } = calculateDriverEarning(request.proposedPrice || 0, weight);
