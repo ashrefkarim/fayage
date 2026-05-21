@@ -653,13 +653,14 @@ export default function RequestDetailsScreen() {
               <Icon name="calendar" size={18} color="#92400E" />
             </View>
             <View style={{ flex: 1 }}>
-              <ThemedText style={styles.scheduledCardLabel}>LIVRAISON PROGRAMMÉE</ThemedText>
+              <ThemedText style={styles.scheduledCardLabel}>{t("scheduledDelivery").toUpperCase()}</ThemedText>
               <ThemedText style={styles.scheduledCardDate}>
                 {(() => {
+                  const locale = language === "ar" ? "ar-MA" : "fr-FR";
                   const d = new Date(request.scheduledFor!);
-                  const day = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
-                  const time = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-                  return `${day.charAt(0).toUpperCase() + day.slice(1)} à ${time}`;
+                  const day = d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" });
+                  const time = d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+                  return `${day.charAt(0).toUpperCase() + day.slice(1)} ${t("scheduledDeliveryAt")} ${time}`;
                 })()}
               </ThemedText>
             </View>

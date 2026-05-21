@@ -105,12 +105,14 @@ export function OfferDetailModal({
     ? language === "ar" ? deliveryOption.labelAr : deliveryOption.labelFr
     : req?.deliveryOption ?? "—";
 
+  const scheduledLocale = language === "ar" ? "ar-MA" : "fr-FR";
   const formattedScheduledDate = req?.scheduledFor
     ? (() => {
         const d = new Date(req.scheduledFor);
-        const day = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
-        const time = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-        return `${day.charAt(0).toUpperCase() + day.slice(1)} à ${time}`;
+        const day = d.toLocaleDateString(scheduledLocale, { weekday: "long", day: "numeric", month: "long" });
+        const time = d.toLocaleTimeString(scheduledLocale, { hour: "2-digit", minute: "2-digit" });
+        const atWord = t("scheduledDeliveryAt");
+        return `${day.charAt(0).toUpperCase() + day.slice(1)} ${atWord} ${time}`;
       })()
     : null;
 
@@ -300,13 +302,13 @@ export function OfferDetailModal({
                 </View>
                 <View style={{ flex: 1 }}>
                   <ThemedText style={styles.scheduledCardLabel}>
-                    LIVRAISON PROGRAMMÉE
+                    {t("scheduledDelivery").toUpperCase()}
                   </ThemedText>
                   <ThemedText style={styles.scheduledCardDate}>
                     {formattedScheduledDate}
                   </ThemedText>
                   <ThemedText style={styles.scheduledCardNote}>
-                    Le client souhaite une livraison à cette date et heure précises.
+                    {t("scheduledDeliveryNote")}
                   </ThemedText>
                 </View>
               </View>

@@ -367,13 +367,14 @@ export default function DriverActiveScreen() {
           <View style={styles.scheduledBanner}>
             <Icon name="calendar" size={14} color="#92400E" />
             <View style={{ flex: 1 }}>
-              <ThemedText style={styles.scheduledBannerLabel}>LIVRAISON PROGRAMMÉE</ThemedText>
+              <ThemedText style={styles.scheduledBannerLabel}>{t("scheduledDelivery").toUpperCase()}</ThemedText>
               <ThemedText style={styles.scheduledBannerDate}>
                 {(() => {
+                  const locale = language === "ar" ? "ar-MA" : "fr-FR";
                   const d = new Date(item.scheduledFor!);
-                  const day = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
-                  const time = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-                  return `${day.charAt(0).toUpperCase() + day.slice(1)} à ${time}`;
+                  const day = d.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" });
+                  const time = d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+                  return `${day.charAt(0).toUpperCase() + day.slice(1)} ${t("scheduledDeliveryAt")} ${time}`;
                 })()}
               </ThemedText>
             </View>

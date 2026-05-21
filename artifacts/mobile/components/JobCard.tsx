@@ -26,11 +26,12 @@ function timeAgo(dateStr: string | Date): string {
   return `Il y a ${Math.floor(diff / 86400)} j`;
 }
 
-function formatScheduledDate(dateStr: string): string {
+function formatScheduledDate(dateStr: string, language: string, atWord: string): string {
+  const locale = language === "ar" ? "ar-MA" : "fr-FR";
   const d = new Date(dateStr);
-  const day = d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
-  const time = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  return `${day} à ${time}`;
+  const day = d.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" });
+  const time = d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  return `${day} ${atWord} ${time}`;
 }
 
 export function JobCard({
@@ -115,9 +116,9 @@ export function JobCard({
       {request.scheduledFor ? (
         <View style={styles.scheduledBanner}>
           <Icon name="calendar" size={13} color="#92400E" />
-          <ThemedText style={styles.scheduledLabel}>LIVRAISON PROGRAMMÉE</ThemedText>
+          <ThemedText style={styles.scheduledLabel}>{t("scheduledDelivery").toUpperCase()}</ThemedText>
           <ThemedText style={styles.scheduledDate}>
-            {formatScheduledDate(request.scheduledFor)}
+            {formatScheduledDate(request.scheduledFor, language, t("scheduledDeliveryAt"))}
           </ThemedText>
         </View>
       ) : null}

@@ -381,9 +381,9 @@ export default function CreateRequestScreen() {
             <ThemedText style={styles.optionTitle}>{t("scheduledDelivery")}</ThemedText>
             <ThemedText style={[styles.optionSub, { color: theme.textSecondary }]}>
               {isScheduled
-                ? scheduledDate.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }) +
+                ? scheduledDate.toLocaleDateString(language === "ar" ? "ar-MA" : "fr-FR", { day: "2-digit", month: "short" }) +
                   " • " +
-                  scheduledDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                  scheduledDate.toLocaleTimeString(language === "ar" ? "ar-MA" : "fr-FR", { hour: "2-digit", minute: "2-digit" })
                 : t("immediateDelivery")}
             </ThemedText>
           </View>
@@ -399,7 +399,7 @@ export default function CreateRequestScreen() {
               style={[styles.dateChip, { backgroundColor: "#6366F115", borderColor: "#6366F130" }]}
             >
               <Icon name="calendar" size={16} color="#6366F1" />
-              <ThemedText style={styles.dateChipText}>{scheduledDate.toLocaleDateString("fr-FR")}</ThemedText>
+              <ThemedText style={styles.dateChipText}>{scheduledDate.toLocaleDateString(language === "ar" ? "ar-MA" : "fr-FR")}</ThemedText>
             </Pressable>
             <Pressable
               onPress={() => setShowTimePicker(true)}
@@ -624,7 +624,7 @@ export default function CreateRequestScreen() {
                   <ThemedText style={[styles.confirmationDetailCellLabel, { color: theme.textSecondary }]}>{t("deliveryTime")}</ThemedText>
                   <ThemedText style={styles.confirmationDetailCellValue} numberOfLines={2}>
                     {isScheduled
-                      ? scheduledDate.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
+                      ? scheduledDate.toLocaleDateString(language === "ar" ? "ar-MA" : "fr-FR", { day: "2-digit", month: "short" }) + " " + t("scheduledDeliveryAt") + " " + scheduledDate.toLocaleTimeString(language === "ar" ? "ar-MA" : "fr-FR", { hour: "2-digit", minute: "2-digit" })
                       : t("immediateDelivery")}
                   </ThemedText>
                 </View>

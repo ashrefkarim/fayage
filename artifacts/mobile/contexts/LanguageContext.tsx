@@ -444,6 +444,8 @@ const translations: Translations = {
   selectPreferredDriver: { fr: "Choisir un chauffeur préféré", ar: "اختيار سائق مفضل" },
   noPreference: { fr: "Aucune préférence", ar: "بدون تفضيل" },
   scheduledDelivery: { fr: "Livraison programmée", ar: "توصيل مجدول" },
+  scheduledDeliveryNote: { fr: "Le client souhaite une livraison à cette date et heure précises.", ar: "يرغب العميل في التسليم في هذا التاريخ والوقت بالضبط." },
+  scheduledDeliveryAt: { fr: "à", ar: "في" },
   scheduleForLater: { fr: "Programmer pour plus tard", ar: "جدولة لوقت لاحق" },
   immediateDelivery: { fr: "Livraison immédiate", ar: "توصيل فوري" },
   selectDateTime: { fr: "Sélectionner date et heure", ar: "اختر التاريخ والوقت" },
