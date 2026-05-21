@@ -18,6 +18,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Icon } from "@/components/Icon";
 import QuickMessageModal from "@/components/QuickMessageModal";
 import * as Haptics from "expo-haptics";
+import Constants from "expo-constants";
 import { ThemedText } from "@/components/ThemedText";
 import { EmptyState } from "@/components/EmptyState";
 import { useTheme } from "@/hooks/useTheme";
@@ -56,6 +57,80 @@ export default function DriverActiveScreen() {
     const timer = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(timer);
   }, []);
+
+  // Track IDs of local notifications we scheduled so we can cancel them when requests change
+  const scheduledNotifIds = useRef<string[]>([]);
+
+  // Schedule "delivery is coming soon" local notifications for upcoming scheduled deliveries.
+  // Fires once per request: 1 hour before AND 30 minutes before the scheduled time.
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+
+    const isExpoGo =
+      (Constants as any).appOwnership === "expo" ||
+      (Constants as any).executionEnvironment === "storeClient";
+    if (isExpoGo) return;
+
+    let Notifs: any = null;
+    try { Notifs = require("expo-notifications"); } catch { return; }
+    if (!Notifs) return;
+
+    // Cancel all previously scheduled reminders
+    const oldIds = scheduledNotifIds.current;
+    if (oldIds.length) {
+      oldIds.forEach((id) => Notifs.cancelScheduledNotificationAsync(id).catch(() => {}));
+      scheduledNotifIds.current = [];
+    }
+
+    const newIds: string[] = [];
+    const nowMs = Date.now();
+
+    const schedule = async (triggerMs: number, title: string, body: string, requestId: string) => {
+      if (triggerMs <= nowMs) return; // already past
+      try {
+        const id = await Notifs.scheduleNotificationAsync({
+          content: { title, body, data: { requestId } },
+          trigger: { type: "date", date: new Date(triggerMs) } as any,
+        });
+        newIds.push(id);
+      } catch { /* silent — device may not support scheduling */ }
+    };
+
+    const promises: Promise<void>[] = [];
+
+    for (const req of activeRequests) {
+      if (!req.scheduledFor) continue;
+      if (req.status !== "accepted" && req.status !== "paid") continue;
+
+      const scheduledMs = new Date(req.scheduledFor).getTime();
+      const isAr = language === "ar";
+
+      // 1 hour before
+      promises.push(schedule(
+        scheduledMs - 60 * 60 * 1000,
+        isAr ? "🚚 تذكير بالتوصيل" : "🚚 Rappel de livraison",
+        isAr ? "رحلتك تبدأ خلال ساعة — استعد!" : "Votre livraison démarre dans 1 heure — Préparez-vous !",
+        req.id,
+      ));
+
+      // 30 minutes before
+      promises.push(schedule(
+        scheduledMs - 30 * 60 * 1000,
+        isAr ? "⚡ التوصيل قريب!" : "⚡ Livraison imminente !",
+        isAr ? "رحلتك تبدأ خلال 30 دقيقة — انطلق الآن!" : "Votre livraison démarre dans 30 min — En route !",
+        req.id,
+      ));
+    }
+
+    Promise.all(promises).then(() => { scheduledNotifIds.current = newIds; });
+
+    return () => {
+      // Cancel on unmount or next run
+      scheduledNotifIds.current.forEach((id) =>
+        Notifs?.cancelScheduledNotificationAsync(id).catch(() => {})
+      );
+    };
+  }, [activeRequests, language]);
 
   // Returns true if this order is scheduled AND the pickup window hasn't opened yet.
   // Only blocks the very first action (accepted → driver_arrived / paid → driver_arrived).
