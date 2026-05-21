@@ -26,6 +26,13 @@ function timeAgo(dateStr: string | Date): string {
   return `Il y a ${Math.floor(diff / 86400)} j`;
 }
 
+function formatScheduledDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  const day = d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
+  const time = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return `${day} à ${time}`;
+}
+
 export function JobCard({
   request,
   onAccept,
@@ -103,6 +110,17 @@ export function JobCard({
           </View>
         </View>
       </View>
+
+      {/* ── Scheduled date banner (only for programmed deliveries) ── */}
+      {request.scheduledFor ? (
+        <View style={styles.scheduledBanner}>
+          <Icon name="calendar" size={13} color="#92400E" />
+          <ThemedText style={styles.scheduledLabel}>LIVRAISON PROGRAMMÉE</ThemedText>
+          <ThemedText style={styles.scheduledDate}>
+            {formatScheduledDate(request.scheduledFor)}
+          </ThemedText>
+        </View>
+      ) : null}
 
       {/* ── Footer: date + price ── */}
       <View
@@ -249,6 +267,33 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     lineHeight: 18,
+  },
+
+  /* Scheduled date banner */
+  scheduledBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FCD34D",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    flexWrap: "wrap",
+  },
+  scheduledLabel: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#92400E",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  scheduledDate: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#78350F",
+    flex: 1,
   },
 
   /* Footer */

@@ -105,6 +105,15 @@ export function OfferDetailModal({
     ? language === "ar" ? deliveryOption.labelAr : deliveryOption.labelFr
     : req?.deliveryOption ?? "—";
 
+  const formattedScheduledDate = req?.scheduledFor
+    ? (() => {
+        const d = new Date(req.scheduledFor);
+        const day = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+        const time = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+        return `${day.charAt(0).toUpperCase() + day.slice(1)} à ${time}`;
+      })()
+    : null;
+
   const goodsPhotos: string[] = (() => {
     const raw = req?.goodsPhotos;
     if (!raw) return [];
@@ -283,6 +292,26 @@ export function OfferDetailModal({
               </View>
             </View>
 
+            {/* Scheduled date — shown prominently so driver knows exactly when to come */}
+            {formattedScheduledDate ? (
+              <View style={styles.scheduledCard}>
+                <View style={styles.scheduledIconWrap}>
+                  <Icon name="calendar" size={18} color="#92400E" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={styles.scheduledCardLabel}>
+                    LIVRAISON PROGRAMMÉE
+                  </ThemedText>
+                  <ThemedText style={styles.scheduledCardDate}>
+                    {formattedScheduledDate}
+                  </ThemedText>
+                  <ThemedText style={styles.scheduledCardNote}>
+                    Le client souhaite une livraison à cette date et heure précises.
+                  </ThemedText>
+                </View>
+              </View>
+            ) : null}
+
             {/* Description */}
             <View style={[styles.card, { backgroundColor: theme.backgroundDefault }]}>
               <ThemedText style={[styles.cardLabel, { color: theme.textSecondary }]}>
@@ -450,6 +479,47 @@ export function OfferDetailModal({
 }
 
 const styles = StyleSheet.create({
+  /* Scheduled date card */
+  scheduledCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 14,
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FCD34D",
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 20,
+  },
+  scheduledIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "#FDE68A",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  scheduledCardLabel: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#92400E",
+    letterSpacing: 0.6,
+    marginBottom: 4,
+  },
+  scheduledCardDate: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#78350F",
+    marginBottom: 4,
+  },
+  scheduledCardNote: {
+    fontSize: 12,
+    color: "#92400E",
+    opacity: 0.8,
+    lineHeight: 17,
+  },
+
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.6)",

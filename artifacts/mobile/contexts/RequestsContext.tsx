@@ -219,6 +219,7 @@ function mapOrderToRequest(order: any): TransportRequest {
     driverGivenRating: order.driverGivenRating,
     clientReview: order.clientReview,
     driverReview: order.driverReview,
+    scheduledFor: order.scheduledFor,
   };
 }
 

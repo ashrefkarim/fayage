@@ -362,6 +362,24 @@ export default function DriverActiveScreen() {
           </View>
         </View>
 
+        {/* Scheduled date — critical info for driver */}
+        {item.scheduledFor ? (
+          <View style={styles.scheduledBanner}>
+            <Icon name="calendar" size={14} color="#92400E" />
+            <View style={{ flex: 1 }}>
+              <ThemedText style={styles.scheduledBannerLabel}>LIVRAISON PROGRAMMÉE</ThemedText>
+              <ThemedText style={styles.scheduledBannerDate}>
+                {(() => {
+                  const d = new Date(item.scheduledFor!);
+                  const day = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+                  const time = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+                  return `${day.charAt(0).toUpperCase() + day.slice(1)} à ${time}`;
+                })()}
+              </ThemedText>
+            </View>
+          </View>
+        ) : null}
+
         {/* Progress steps */}
         <View style={[styles.stepsWrapper, { borderColor: theme.border + "50" }]}>
           {renderProgressSteps(item.status)}
@@ -554,6 +572,30 @@ export default function DriverActiveScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   contentContainer: { flexGrow: 1, paddingHorizontal: Spacing.lg },
+
+  /* Scheduled date banner */
+  scheduledBanner: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FCD34D",
+    borderRadius: 14,
+    padding: 12,
+  },
+  scheduledBannerLabel: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#92400E",
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  scheduledBannerDate: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#78350F",
+  },
 
   /* Header */
   headerCard: {

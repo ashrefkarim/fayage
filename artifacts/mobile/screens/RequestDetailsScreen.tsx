@@ -647,6 +647,25 @@ export default function RequestDetailsScreen() {
           </View>
         </View>
 
+        {request.scheduledFor ? (
+          <View style={styles.scheduledCard}>
+            <View style={[styles.scheduledIconCircle]}>
+              <Icon name="calendar" size={18} color="#92400E" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <ThemedText style={styles.scheduledCardLabel}>LIVRAISON PROGRAMMÉE</ThemedText>
+              <ThemedText style={styles.scheduledCardDate}>
+                {(() => {
+                  const d = new Date(request.scheduledFor!);
+                  const day = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+                  const time = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+                  return `${day.charAt(0).toUpperCase() + day.slice(1)} à ${time}`;
+                })()}
+              </ThemedText>
+            </View>
+          </View>
+        ) : null}
+
         <View style={[styles.descriptionCard, { backgroundColor: isDark ? "#1E293B" : "#FFFFFF" }]}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 }}>
             <View style={[styles.sectionAccentBar, { backgroundColor: "#D97706" }]} />
@@ -1520,6 +1539,39 @@ const styles = StyleSheet.create({
   detailRow: { display: "none" },
   detailLeft: { display: "none" },
   detailValue: { display: "none" },
+  /* Scheduled date card */
+  scheduledCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 14,
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FCD34D",
+    borderRadius: 16,
+    padding: 16,
+  },
+  scheduledIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "#FDE68A",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  scheduledCardLabel: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#92400E",
+    letterSpacing: 0.6,
+    marginBottom: 4,
+  },
+  scheduledCardDate: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#78350F",
+  },
+
   descriptionCard: {
     padding: Spacing.lg,
     borderRadius: BorderRadius.md,
