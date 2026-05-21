@@ -27,7 +27,7 @@ export default function CreateRequestScreen() {
   const headerHeight = useHeaderPadding();
   const navigation = useNavigation();
   const { theme } = useTheme();
-  const { t, isRTL } = useLanguage();
+  const { t, language, isRTL } = useLanguage();
   const { user } = useAuth();
   const { createRequest } = useRequests();
 
