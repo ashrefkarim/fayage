@@ -35,7 +35,7 @@ const Navbar = () => {
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-background/90 backdrop-blur-md border-b border-border py-3' : 'bg-transparent py-5'}`}>
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl leading-none">F</div>
+          <img src={import.meta.env.BASE_URL + 'icon.png'} className="w-8 h-8 rounded-lg object-cover" alt="Fayage" />
           <span className="font-display font-bold text-2xl tracking-tight text-foreground">Fayage</span>
         </Link>
 
@@ -128,7 +128,7 @@ const Hero = () => {
           >
             <div className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl shadow-primary/10">
               <img 
-                src="/hero.png" 
+                src={import.meta.env.BASE_URL + 'hero.png'} 
                 alt="Livraison rapide au Maroc" 
                 className="w-full h-full object-cover"
               />
@@ -214,7 +214,7 @@ const ValueProps = () => {
             </ul>
             
             <img 
-              src="/client.png" 
+              src={import.meta.env.BASE_URL + 'client.png'} 
               alt="Client Fayage" 
               className="w-full h-48 object-cover rounded-xl mb-6 shadow-sm"
             />
@@ -261,7 +261,7 @@ const ValueProps = () => {
             </ul>
             
             <img 
-              src="/driver.png" 
+              src={import.meta.env.BASE_URL + 'driver.png'} 
               alt="Chauffeur Fayage" 
               className="w-full h-48 object-cover rounded-xl mb-6 shadow-sm opacity-90"
             />
@@ -375,7 +375,7 @@ const Features = () => {
               viewport={{ once: true }}
             >
               <img 
-                src="/app-mockup.png" 
+                src={import.meta.env.BASE_URL + 'app-mockup.png'} 
                 alt="Interface de l'application Fayage" 
                 className="w-full h-full object-contain drop-shadow-2xl"
               />
@@ -459,7 +459,7 @@ const Fleet = () => {
             viewport={{ once: true }}
           >
             <div className="aspect-[4/5] md:aspect-[16/9] lg:aspect-[4/5]">
-              <img src="/fleet.png" alt="Flotte de véhicules Fayage" className="w-full h-full object-cover" />
+              <img src={import.meta.env.BASE_URL + 'fleet.png'} alt="Flotte de véhicules Fayage" className="w-full h-full object-cover" />
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent flex flex-col justify-end p-8">
               <div className="flex items-center gap-2 text-primary font-bold text-lg mb-2">
@@ -519,7 +519,7 @@ const LocalTouch = () => {
             viewport={{ once: true }}
           >
             <div className="aspect-video lg:aspect-[4/3] rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white/10">
-              <img src="/souk-delivery.png" alt="Livraison dans un souk marocain" className="w-full h-full object-cover" />
+              <img src={import.meta.env.BASE_URL + 'souk-delivery.png'} alt="Livraison dans un souk marocain" className="w-full h-full object-cover" />
             </div>
           </motion.div>
         </div>
@@ -576,7 +576,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
           <div className="col-span-2 lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl leading-none">F</div>
+              <img src={import.meta.env.BASE_URL + 'icon.png'} className="w-8 h-8 rounded-lg object-cover" alt="Fayage" />
               <span className="font-display font-bold text-2xl tracking-tight text-foreground">Fayage</span>
             </Link>
             <p className="text-muted-foreground text-sm max-w-xs mb-6">

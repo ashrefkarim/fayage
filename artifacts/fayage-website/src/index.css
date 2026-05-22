@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -51,69 +51,80 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* Fayage Kinetic Moroccan Palette */
+/* Fayage — matches the mobile app palette exactly */
 :root {
-  --background: 40 33% 98%; /* Warm sand / off-white */
-  --foreground: 20 20% 15%; /* Deep charcoal/brown */
+  /* App primary: #1E3A8A navy blue */
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
 
-  --border: 20 10% 85%;
-  --input: 20 10% 85%;
-  --ring: 24 95% 53%; /* Terracotta orange */
+  --border: 214 32% 88%;
+  --input: 214 32% 88%;
+  --ring: 225 64% 33%;
 
   --card: 0 0% 100%;
-  --card-foreground: 20 20% 15%;
-  --card-border: 20 10% 90%;
+  --card-foreground: 222 47% 11%;
+  --card-border: 214 32% 91%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 20 20% 15%;
-  --popover-border: 20 10% 90%;
+  --popover-foreground: 222 47% 11%;
+  --popover-border: 214 32% 91%;
 
-  --primary: 24 95% 53%; /* Fayage Orange/Terracotta */
+  /* #1E3A8A */
+  --primary: 225 64% 33%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 40 40% 12%; /* Dark charcoal with warm tint */
-  --secondary-foreground: 40 33% 98%;
+  /* Dark navy for driver card bg */
+  --secondary: 222 47% 14%;
+  --secondary-foreground: 210 40% 98%;
 
-  --muted: 40 20% 94%;
-  --muted-foreground: 20 10% 40%;
+  --muted: 210 40% 94%;
+  --muted-foreground: 215 16% 47%;
 
-  --accent: 38 90% 55%; /* Warm amber */
-  --accent-foreground: 40 40% 12%;
+  /* #D97706 amber — app secondary */
+  --accent: 38 93% 44%;
+  --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
   --app-font-sans: 'Plus Jakarta Sans', sans-serif;
   --radius: 1rem;
+
+  --primary-border: hsl(from hsl(var(--primary)) h s calc(l - 8) / alpha);
+  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l - 8) / alpha);
+  --muted-border: hsl(from hsl(var(--muted)) h s calc(l - 8) / alpha);
+  --accent-border: hsl(from hsl(var(--accent)) h s calc(l - 8) / alpha);
+  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l - 8) / alpha);
 }
 
 .dark {
-  --background: 20 20% 10%;
-  --foreground: 40 33% 98%;
+  --background: 222 47% 8%;
+  --foreground: 210 40% 98%;
 
-  --border: 20 10% 20%;
-  --input: 20 10% 20%;
-  --ring: 24 95% 53%;
+  --border: 222 20% 20%;
+  --input: 222 20% 20%;
+  --ring: 217 91% 60%;
 
-  --card: 20 20% 12%;
-  --card-foreground: 40 33% 98%;
-  --card-border: 20 10% 18%;
+  --card: 222 47% 11%;
+  --card-foreground: 210 40% 98%;
+  --card-border: 222 20% 18%;
 
-  --popover: 20 20% 12%;
-  --popover-foreground: 40 33% 98%;
-  --popover-border: 20 10% 18%;
+  --popover: 222 47% 11%;
+  --popover-foreground: 210 40% 98%;
+  --popover-border: 222 20% 18%;
 
-  --primary: 24 95% 53%;
+  /* #3B82F6 lighter blue for dark mode */
+  --primary: 217 91% 60%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 40 20% 90%;
-  --secondary-foreground: 20 20% 15%;
+  --secondary: 210 40% 90%;
+  --secondary-foreground: 222 47% 11%;
 
-  --muted: 20 10% 15%;
-  --muted-foreground: 20 10% 70%;
+  --muted: 222 20% 15%;
+  --muted-foreground: 215 20% 65%;
 
-  --accent: 38 90% 55%;
-  --accent-foreground: 20 20% 15%;
+  --accent: 38 93% 50%;
+  --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
