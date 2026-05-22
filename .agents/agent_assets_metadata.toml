@@ -1,5 +1,40 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "lTAUhZFWxx_WObT49rIOV"
+uri = "file://artifacts/fayage-website/public/hero.png"
+type = "image"
+title = "Moroccan city delivery scooter"
+
+[[generated]]
+id = "D3BKN-uYhMl9U3Tzv1ZNx"
+uri = "file://artifacts/fayage-website/public/driver.png"
+type = "image"
+title = "Confident driver with smartphone"
+
+[[generated]]
+id = "ws92ocFIc3k7AjW2sHmqE"
+uri = "file://artifacts/fayage-website/public/client.png"
+type = "image"
+title = "Business owner with tablet"
+
+[[generated]]
+id = "F1SwectDMydoeoB_3OpSH"
+uri = "file://artifacts/fayage-website/public/app-mockup.png"
+type = "image"
+title = "Logistics app interface map"
+
+[[generated]]
+id = "tre3N2V08NzZx_vgtESDb"
+uri = "file://artifacts/fayage-website/public/souk-delivery.png"
+type = "image"
+title = "Moroccan souk delivery"
+
+[[generated]]
+id = "nFStEPk7qfZgFM4olI3-j"
+uri = "file://artifacts/fayage-website/public/fleet.png"
+type = "image"
+title = "Fayage fleet vehicles"
 
 [[outputs]]
 id = "eCMOZcWURcGZyRYzZ4GZS"
