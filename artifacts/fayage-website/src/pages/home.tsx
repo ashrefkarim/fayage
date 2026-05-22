@@ -192,8 +192,7 @@ const Hero = () => {
   const { t } = useLanguage();
   const { open } = useModal();
   const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 1000], [0, 200]);
-  const opacity = useTransform(scrollY, [0, 500], [1, 0]);
+  const y1 = useTransform(scrollY, [0, 1000], [0, 60]);
 
   return (
     <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
@@ -233,7 +232,7 @@ const Hero = () => {
 
           <motion.div
             className="flex-1 relative w-full max-w-lg lg:max-w-none"
-            style={{ y: y1, opacity }}
+            style={{ y: y1 }}
           >
             <div className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl shadow-primary/10">
               <img
