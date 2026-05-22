@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { Link } from "wouter";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { 
   Package, 
   MapPin, 
@@ -19,6 +19,97 @@ import {
   ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+/* ── Download Modal Context ───────────────────────────────── */
+type ModalRole = "client" | "chauffeur" | null;
+const ModalContext = createContext<{ open: (r: "client" | "chauffeur") => void }>({ open: () => {} });
+const useModal = () => useContext(ModalContext);
+
+const DownloadModal = ({ role, onClose }: { role: ModalRole; onClose: () => void }) => {
+  useEffect(() => {
+    if (!role) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [role, onClose]);
+
+  const isClient = role === "client";
+
+  return (
+    <AnimatePresence>
+      {role && (
+        <motion.div
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <div className="absolute inset-0 bg-foreground/60 backdrop-blur-sm" onClick={onClose} />
+          <motion.div
+            className="relative bg-background rounded-3xl shadow-2xl w-full max-w-sm p-8 z-10"
+            initial={{ scale: 0.92, y: 24 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.92, y: 24 }}
+          >
+            <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
+              <X size={20} />
+            </button>
+
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 ${isClient ? "bg-primary/10" : "bg-accent/10"}`}>
+              {isClient
+                ? <Package size={28} className="text-primary" />
+                : <Truck size={28} className="text-accent" />}
+            </div>
+
+            <h3 className="font-display text-2xl font-bold mb-1">
+              {isClient ? "Envoyez vos marchandises" : "Rejoignez la flotte FAYAGE"}
+            </h3>
+            <p className="text-muted-foreground text-sm mb-6">
+              {isClient
+                ? "Téléchargez l'app FAYAGE pour créer votre première expédition en quelques minutes."
+                : "Téléchargez l'app FAYAGE pour accéder aux missions près de chez vous et gérez vos gains."}
+            </p>
+
+            <div className="flex flex-col gap-3">
+              <a
+                href="https://play.google.com/store/apps/details?id=com.fayage.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 bg-foreground text-background rounded-2xl px-5 py-3 hover:bg-foreground/90 transition-colors"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 shrink-0">
+                  <path d="M3.18 23.76c.3.17.64.24.99.2l13.5-7.79-2.89-2.89L3.18 23.76zM.54 1.46C.2 1.8 0 2.35 0 3.07v17.86c0 .72.2 1.27.54 1.61l.08.08 10-10v-.24L.62 1.38l-.08.08zM20.54 10.5l-2.87-1.66-3.23 3.23 3.23 3.23 2.89-1.67c.82-.47.82-1.24-.02-1.13zM4.17.24l13.5 7.79-2.89 2.89L4.17.24z"/>
+                </svg>
+                <div>
+                  <div className="text-xs opacity-70 leading-none">Disponible sur</div>
+                  <div className="font-bold text-sm leading-tight">Google Play</div>
+                </div>
+              </a>
+              <a
+                href="https://apps.apple.com/app/fayage"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 border border-border rounded-2xl px-5 py-3 hover:bg-muted transition-colors"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 shrink-0">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                </svg>
+                <div>
+                  <div className="text-xs text-muted-foreground leading-none">Disponible sur</div>
+                  <div className="font-bold text-sm leading-tight">App Store</div>
+                </div>
+              </a>
+            </div>
+
+            <p className="text-center text-xs text-muted-foreground mt-5">
+              Gratuit · Français & Arabe (العربية)
+            </p>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -80,6 +171,7 @@ const Navbar = () => {
 };
 
 const Hero = () => {
+  const { open } = useModal();
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 1000], [0, 200]);
   const opacity = useTransform(scrollY, [0, 500], [1, 0]);
@@ -111,10 +203,10 @@ const Hero = () => {
               <span className="block mt-2 text-sm opacity-80">Disponible en Français et Arabe (العربية).</span>
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-              <Button size="lg" className="w-full sm:w-auto rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground h-14 px-8 text-base">
+              <Button size="lg" onClick={() => open("client")} className="w-full sm:w-auto rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground h-14 px-8 text-base">
                 Envoyer un colis
               </Button>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-full border-border hover:bg-muted h-14 px-8 text-base group">
+              <Button size="lg" variant="outline" onClick={() => open("chauffeur")} className="w-full sm:w-auto rounded-full border-border hover:bg-muted h-14 px-8 text-base group">
                 Devenir chauffeur
                 <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
@@ -166,6 +258,7 @@ const Hero = () => {
 };
 
 const ValueProps = () => {
+  const { open } = useModal();
   return (
     <section className="py-24 bg-muted/50 border-y border-border">
       <div className="container mx-auto px-4 md:px-6">
@@ -218,7 +311,7 @@ const ValueProps = () => {
               className="w-full h-48 object-cover rounded-xl mb-6 shadow-sm"
             />
             
-            <Button variant="outline" className="w-full rounded-xl h-12 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
+            <Button variant="outline" onClick={() => open("client")} className="w-full rounded-xl h-12 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
               Créer une expédition
             </Button>
           </motion.div>
@@ -265,7 +358,7 @@ const ValueProps = () => {
               className="w-full h-48 object-cover rounded-xl mb-6 shadow-sm opacity-90"
             />
             
-            <Button className="w-full rounded-xl h-12 bg-accent hover:bg-accent/90 text-accent-foreground border-none transition-colors">
+            <Button onClick={() => open("chauffeur")} className="w-full rounded-xl h-12 bg-accent hover:bg-accent/90 text-accent-foreground border-none transition-colors">
               Rejoindre la flotte
             </Button>
           </motion.div>
@@ -721,20 +814,24 @@ const Footer = () => {
 };
 
 export default function Home() {
+  const [modalRole, setModalRole] = useState<ModalRole>(null);
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main>
-        <Hero />
-        <ValueProps />
-        <Steps />
-        <Features />
-        <AppScreenshots />
-        <Fleet />
-        <LocalTouch />
-        <CTA />
-      </main>
-      <Footer />
-    </div>
+    <ModalContext.Provider value={{ open: (r) => setModalRole(r) }}>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main>
+          <Hero />
+          <ValueProps />
+          <Steps />
+          <Features />
+          <AppScreenshots />
+          <Fleet />
+          <LocalTouch />
+          <CTA />
+        </main>
+        <Footer />
+        <DownloadModal role={modalRole} onClose={() => setModalRole(null)} />
+      </div>
+    </ModalContext.Provider>
   );
 }
