@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { 
@@ -9,6 +9,7 @@ import {
   Truck, 
   ShieldCheck,
   ChevronRight,
+  ChevronLeft,
   Menu,
   X,
   Smartphone,
@@ -410,6 +411,90 @@ const Features = () => {
   );
 };
 
+const screens = [
+  { src: "screenshots/screen1.jpg", label: "Client ou Chauffeur" },
+  { src: "screenshots/screen2.jpg", label: "Types de véhicules" },
+  { src: "screenshots/screen3.jpg", label: "Choisir un chauffeur" },
+  { src: "screenshots/screen4.jpg", label: "Suivi en temps réel" },
+  { src: "screenshots/screen5.jpg", label: "Suivi de la demande" },
+  { src: "screenshots/screen6.jpg", label: "Messagerie instantanée" },
+  { src: "screenshots/screen7.jpg", label: "Confirmation sécurisée" },
+  { src: "screenshots/screen8.jpg", label: "Suivez vos gains" },
+];
+
+const AppScreenshots = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (dir: "left" | "right") => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollBy({ left: dir === "right" ? 300 : -300, behavior: "smooth" });
+  };
+
+  return (
+    <section className="py-24 bg-secondary overflow-hidden">
+      <div className="container mx-auto px-4 md:px-6 mb-12 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <span className="inline-block text-xs font-bold uppercase tracking-widest text-accent mb-4 px-3 py-1 bg-accent/10 rounded-full">Application mobile</span>
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-secondary-foreground mb-4">
+            L'app dans vos mains
+          </h2>
+          <p className="text-secondary-foreground/70 text-lg max-w-xl mx-auto">
+            Disponible sur Android et iOS — simple, rapide, bilingue Français / Arabe.
+          </p>
+        </motion.div>
+      </div>
+
+      <div className="relative">
+        <button
+          onClick={() => scroll("left")}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/90 border border-border shadow-lg flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+          aria-label="Précédent"
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <button
+          onClick={() => scroll("right")}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/90 border border-border shadow-lg flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+          aria-label="Suivant"
+        >
+          <ChevronRight size={20} />
+        </button>
+
+        <div
+          ref={scrollRef}
+          className="flex gap-5 overflow-x-auto scroll-smooth pb-4 px-12"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {screens.map((s, i) => (
+            <motion.div
+              key={i}
+              className="flex-none"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.07 }}
+            >
+              <div className="rounded-2xl overflow-hidden shadow-2xl shadow-black/40 w-52">
+                <img
+                  src={import.meta.env.BASE_URL + s.src}
+                  alt={s.label}
+                  className="w-full object-cover"
+                  draggable={false}
+                />
+              </div>
+              <p className="text-center text-xs text-secondary-foreground/60 mt-3 font-medium">{s.label}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const Fleet = () => {
   return (
     <section id="flotte" className="py-24">
@@ -644,6 +729,7 @@ export default function Home() {
         <ValueProps />
         <Steps />
         <Features />
+        <AppScreenshots />
         <Fleet />
         <LocalTouch />
         <CTA />
