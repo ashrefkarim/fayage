@@ -48,7 +48,6 @@ const Navbar = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          <Button variant="outline" className="rounded-full border-primary/20 text-primary hover:bg-primary/5">Connexion</Button>
           <Button className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25">
             Télécharger l'App
           </Button>
@@ -72,7 +71,6 @@ const Navbar = () => {
           <a href="#comment-ca-marche" className="block py-2 text-foreground/80 font-medium" onClick={() => setMobileMenuOpen(false)}>Comment ça marche</a>
           <a href="#flotte" className="block py-2 text-foreground/80 font-medium" onClick={() => setMobileMenuOpen(false)}>Notre flotte</a>
           <div className="h-px bg-border w-full my-2"></div>
-          <Button variant="outline" className="w-full justify-center">Connexion</Button>
           <Button className="w-full justify-center bg-primary">Télécharger l'App</Button>
         </div>
       )}
@@ -129,7 +127,7 @@ const Hero = () => {
             <div className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl shadow-primary/10">
               <img 
                 src={import.meta.env.BASE_URL + 'hero.png'} 
-                alt="Livraison rapide au Maroc" 
+                alt="Transport logistique au Maroc" 
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
@@ -425,9 +423,10 @@ const Fleet = () => {
             
             <div className="space-y-6">
               {[
-                { name: "Scooter / Moto", desc: "Idéal pour les documents, petits colis et repas.", time: "Le plus rapide en ville" },
-                { name: "Voiture citadine", desc: "Parfait pour les colis moyens, courses et petits achats.", time: "Polyvalent" },
-                { name: "Fourgonnette", desc: "Conçu pour les gros colis, petits déménagements et palettes.", time: "Idéal entreprises" }
+                { name: "Fourgon", desc: "Idéal pour les envois palettisés, petits déménagements et livraisons entreprises.", time: "1 – 3 tonnes" },
+                { name: "Camion 7 – 19 tonnes", desc: "Pour les chargements industriels, équipements lourds et marchandises en gros.", time: "7 – 19 tonnes" },
+                { name: "Semi-remorque / Train routier", desc: "Transport longue distance et chargements complets sur toute l'étendue du Maroc.", time: "24 – 40 tonnes" },
+                { name: "Benne & Citerne", desc: "Sable, gravier, liquides et matériaux vrac — spécialisé selon votre besoin.", time: "Vrac & liquides" },
               ].map((vehicle, i) => (
                 <motion.div 
                   key={i}
@@ -607,8 +606,8 @@ const Footer = () => {
           <div>
             <h4 className="font-bold mb-4 text-foreground">Légal</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-primary transition-colors">Conditions générales</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Confidentialité</a></li>
+              <li><a href="/fayage-website/conditions" className="hover:text-primary transition-colors">Conditions d'utilisation</a></li>
+              <li><a href="/fayage-website/confidentialite" className="hover:text-primary transition-colors">Politique de confidentialité</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Mentions légales</a></li>
             </ul>
           </div>

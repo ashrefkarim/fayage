@@ -4,7 +4,7 @@ uploads = []
 id = "lTAUhZFWxx_WObT49rIOV"
 uri = "file://artifacts/fayage-website/public/hero.png"
 type = "image"
-title = "Moroccan city delivery scooter"
+title = "generated_image"
 
 [[generated]]
 id = "D3BKN-uYhMl9U3Tzv1ZNx"
@@ -34,7 +34,7 @@ title = "Moroccan souk delivery"
 id = "nFStEPk7qfZgFM4olI3-j"
 uri = "file://artifacts/fayage-website/public/fleet.png"
 type = "image"
-title = "Fayage fleet vehicles"
+title = "generated_image"
 
 [[outputs]]
 id = "eCMOZcWURcGZyRYzZ4GZS"
