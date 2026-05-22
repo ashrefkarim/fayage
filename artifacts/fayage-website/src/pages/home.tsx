@@ -137,6 +137,7 @@ const Navbar = () => {
           <a href="#chauffeurs" className="text-foreground/80 hover:text-primary transition-colors">Pour les chauffeurs</a>
           <a href="#comment-ca-marche" className="text-foreground/80 hover:text-primary transition-colors">Comment ça marche</a>
           <a href="#flotte" className="text-foreground/80 hover:text-primary transition-colors">Notre flotte</a>
+          <a href="#contact" className="text-foreground/80 hover:text-primary transition-colors">Contact</a>
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
@@ -705,6 +706,278 @@ const LocalTouch = () => {
   );
 };
 
+/* ── Testimonials ─────────────────────────────────────────── */
+const Testimonials = () => {
+  const items = [
+    { name: "Hassan Benali", role: "Gérant — Import Export Casablanca", text: "Avec Fayage j'expédie mes palettes de Casablanca à Tanger en moins de 24h. Les chauffeurs sont ponctuels et le suivi en temps réel me donne une vraie tranquillité d'esprit.", stars: 5, avatar: "H" },
+    { name: "Fatima Zahra Moussaoui", role: "Responsable logistique, Agadir", text: "Interface simple, bilingue, et les prix sont transparents. On voit exactement ce qu'on paye avant de confirmer. Exactement ce dont on avait besoin pour nos livraisons B2B.", stars: 5, avatar: "F" },
+    { name: "Youssef El Mansouri", role: "Chauffeur indépendant, Rabat", text: "J'ai doublé mes revenus mensuels depuis que j'utilise Fayage. Les missions arrivent directement sur mon téléphone, et le retrait des gains est rapide via CashPlus.", stars: 5, avatar: "Y" },
+    { name: "Karim Chraibi", role: "Directeur achats, PME Fès", text: "On gère 30 à 40 envois par mois. Fayage nous a permis de réduire nos coûts logistiques de 20% par rapport à nos prestataires précédents. Je recommande vivement.", stars: 5, avatar: "K" },
+  ];
+
+  return (
+    <section className="py-24 bg-muted/40">
+      <div className="container mx-auto px-4 md:px-6">
+        <motion.div className="text-center mb-14" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <span className="inline-block text-xs font-bold uppercase tracking-widest text-accent mb-4 px-3 py-1 bg-accent/10 rounded-full">Ils nous font confiance</span>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">Ce que disent nos utilisateurs</h2>
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">Clients et chauffeurs à travers le Maroc partagent leur expérience.</p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {items.map((t, i) => (
+            <motion.div key={i} className="bg-card border border-border rounded-3xl p-7 flex flex-col gap-4"
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+              <div className="flex gap-1">
+                {Array.from({ length: t.stars }).map((_, s) => (
+                  <Star key={s} size={16} className="fill-accent text-accent" />
+                ))}
+              </div>
+              <p className="text-foreground leading-relaxed">"{t.text}"</p>
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-border">
+                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">{t.avatar}</div>
+                <div>
+                  <div className="font-semibold text-sm">{t.name}</div>
+                  <div className="text-xs text-muted-foreground">{t.role}</div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* ── Coverage + Pricing ───────────────────────────────────── */
+const CoveragePricing = () => {
+  const { open } = useModal();
+  const cities = [
+    "Casablanca","Rabat","Tanger","Agadir","Fès","Marrakech",
+    "Meknès","Oujda","Kenitra","Tétouan","Safi","El Jadida",
+    "Beni Mellal","Nador","Settat","Khouribga","Laâyoune",
+  ];
+  const plans = [
+    { label: "Fourgon", capacity: "1 – 3 t", price: "À partir de 350 MAD", color: "bg-primary/10 text-primary border-primary/20" },
+    { label: "Camion 7 – 19 T", capacity: "7 – 19 t", price: "À partir de 900 MAD", color: "bg-accent/10 text-accent border-accent/20" },
+    { label: "Semi-remorque", capacity: "24 – 40 t", price: "Sur devis", color: "bg-muted text-foreground border-border" },
+  ];
+
+  return (
+    <section className="py-24">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+
+          {/* Coverage */}
+          <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+            <span className="inline-block text-xs font-bold uppercase tracking-widest text-accent mb-4 px-3 py-1 bg-accent/10 rounded-full">Couverture</span>
+            <h2 className="font-display text-3xl font-bold mb-4">Disponible dans tout le Maroc</h2>
+            <p className="text-muted-foreground mb-8">Fayage opère dans les principales villes marocaines. Vous pouvez créer une expédition depuis ou vers n'importe laquelle de ces villes.</p>
+            <div className="flex flex-wrap gap-2 mb-8">
+              {cities.map((c) => (
+                <span key={c} className="px-3 py-1.5 bg-muted border border-border rounded-full text-sm font-medium text-foreground">{c}</span>
+              ))}
+              <span className="px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-sm font-medium text-primary">+ toutes les routes inter-villes</span>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+              <MapPin className="text-primary shrink-0" size={20} />
+              <p className="text-sm text-foreground">Saisissez n'importe quelle adresse dans l'app — le calcul de prix se fait automatiquement selon la distance réelle.</p>
+            </div>
+          </motion.div>
+
+          {/* Pricing */}
+          <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+            <span className="inline-block text-xs font-bold uppercase tracking-widest text-accent mb-4 px-3 py-1 bg-accent/10 rounded-full">Tarification</span>
+            <h2 className="font-display text-3xl font-bold mb-4">Des prix transparents</h2>
+            <p className="text-muted-foreground mb-8">Le prix est calculé automatiquement selon la distance, le type de véhicule et la priorité choisie. Aucune surprise.</p>
+            <div className="space-y-4 mb-8">
+              {plans.map((p, i) => (
+                <div key={i} className={`flex items-center justify-between p-5 rounded-2xl border ${p.color}`}>
+                  <div className="flex items-center gap-3">
+                    <Truck size={20} />
+                    <div>
+                      <div className="font-bold">{p.label}</div>
+                      <div className="text-xs opacity-70">{p.capacity}</div>
+                    </div>
+                  </div>
+                  <span className="font-bold text-sm">{p.price}</span>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-4 text-center mb-6">
+              {[
+                { label: "Standard", multi: "×1", note: "Délai normal" },
+                { label: "Urgent", multi: "×1.5", note: "+50% tarif" },
+                { label: "Express", multi: "×2", note: "+100% tarif" },
+              ].map((m, i) => (
+                <div key={i} className="p-3 bg-muted rounded-2xl border border-border">
+                  <div className="font-display font-bold text-lg text-primary">{m.multi}</div>
+                  <div className="font-semibold text-sm">{m.label}</div>
+                  <div className="text-xs text-muted-foreground">{m.note}</div>
+                </div>
+              ))}
+            </div>
+            <Button onClick={() => open("client")} className="w-full rounded-xl h-12 bg-primary hover:bg-primary/90 text-primary-foreground">
+              Obtenir un devis instantané
+            </Button>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* ── FAQ ──────────────────────────────────────────────────── */
+const FAQ = () => {
+  const [open, setOpen] = useState<number | null>(null);
+  const faqs = [
+    { q: "Comment sont calculés les prix ?", a: "Le prix est calculé automatiquement selon la distance réelle entre les deux adresses, le type de véhicule sélectionné (fourgon, camion 7t, semi-remorque…), la priorité choisie (Standard, Urgent, Express) et les options supplémentaires. Vous voyez le prix final avant de confirmer." },
+    { q: "Quelles villes sont couvertes ?", a: "Fayage couvre toutes les grandes villes marocaines : Casablanca, Rabat, Tanger, Agadir, Fès, Marrakech, Meknès, Oujda, Kénitra et plus. Pour les trajets inter-villes et les zones industrielles, le service est disponible sur toutes les routes nationales." },
+    { q: "Les chauffeurs sont-ils vérifiés ?", a: "Oui. Chaque chauffeur passe par un processus de vérification : permis de conduire valide, carte grise et assurance véhicule à jour, pièce d'identité nationale (CIN). Un système d'évaluation permet aux clients de noter chaque prestation." },
+    { q: "Que se passe-t-il si ma marchandise est endommagée ?", a: "En cas de problème, contactez le support Fayage directement depuis l'application. Fayage intervient en tant que médiateur et peut activer les mécanismes de remboursement prévus dans les conditions d'utilisation." },
+    { q: "Comment les chauffeurs reçoivent-ils leurs gains ?", a: "Les gains sont visibles en temps réel dans l'onglet 'Gains' de l'app. Les chauffeurs peuvent demander un retrait via Wafacash, CashPlus ou virement bancaire. Les retraits sont traités selon les délais indiqués dans l'application." },
+    { q: "L'application est-elle disponible en arabe ?", a: "Oui ! Fayage est entièrement bilingue Français / Arabe (العربية). Vous pouvez changer la langue à tout moment depuis les paramètres de l'application ou dès l'écran d'inscription." },
+    { q: "Puis-je planifier une livraison à l'avance ?", a: "Oui. Lors de la création d'une demande, vous pouvez choisir une date et heure de départ planifiée. Le chauffeur sera notifié et le bouton de démarrage se déverrouille automatiquement à l'heure prévue." },
+    { q: "Comment contacter le support ?", a: "Depuis l'application, appuyez sur 'Support' dans n'importe quelle demande active. Vous pouvez aussi nous écrire à FAYAG.APP@GMAIL.COM ou appeler le 0638563712." },
+  ];
+
+  return (
+    <section className="py-24 bg-muted/40">
+      <div className="container mx-auto px-4 md:px-6 max-w-3xl">
+        <motion.div className="text-center mb-14" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <span className="inline-block text-xs font-bold uppercase tracking-widest text-accent mb-4 px-3 py-1 bg-accent/10 rounded-full">FAQ</span>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">Questions fréquentes</h2>
+          <p className="text-muted-foreground text-lg">Tout ce que vous devez savoir avant de commencer.</p>
+        </motion.div>
+
+        <div className="space-y-3">
+          {faqs.map((f, i) => (
+            <motion.div key={i} className="bg-card border border-border rounded-2xl overflow-hidden"
+              initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
+              <button
+                className="w-full flex items-center justify-between px-6 py-5 text-left gap-4 hover:bg-muted/50 transition-colors"
+                onClick={() => setOpen(open === i ? null : i)}
+              >
+                <span className="font-semibold text-foreground">{f.q}</span>
+                <ChevronRight size={18} className={`shrink-0 text-muted-foreground transition-transform duration-200 ${open === i ? "rotate-90" : ""}`} />
+              </button>
+              <AnimatePresence initial={false}>
+                {open === i && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <p className="px-6 pb-5 text-muted-foreground leading-relaxed">{f.a}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* ── Contact ──────────────────────────────────────────────── */
+const Contact = () => {
+  const [sent, setSent] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const subject = encodeURIComponent(`Message depuis le site Fayage — ${form.name}`);
+    const body = encodeURIComponent(`Nom: ${form.name}\nEmail: ${form.email}\n\n${form.message}`);
+    window.open(`mailto:FAYAG.APP@GMAIL.COM?subject=${subject}&body=${body}`, "_blank");
+    setSent(true);
+    setTimeout(() => setSent(false), 4000);
+  };
+
+  return (
+    <section id="contact" className="py-24">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start max-w-5xl mx-auto">
+
+          {/* Info */}
+          <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+            <span className="inline-block text-xs font-bold uppercase tracking-widest text-accent mb-4 px-3 py-1 bg-accent/10 rounded-full">Contact</span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">On est là pour vous</h2>
+            <p className="text-muted-foreground text-lg mb-10">Une question sur le service, un partenariat B2B, ou besoin d'aide ? Contactez-nous directement.</p>
+
+            <div className="space-y-5">
+              {[
+                { icon: <MessageSquare size={20} className="text-primary" />, label: "Email", value: "FAYAG.APP@GMAIL.COM", href: "mailto:FAYAG.APP@GMAIL.COM" },
+                { icon: <Smartphone size={20} className="text-primary" />, label: "Téléphone / WhatsApp", value: "0638 563 712", href: "https://wa.me/212638563712" },
+                { icon: <Globe size={20} className="text-primary" />, label: "Support in-app", value: "Depuis l'onglet Support dans l'app", href: null },
+              ].map((c, i) => (
+                <div key={i} className="flex items-start gap-4 p-4 bg-muted/50 border border-border rounded-2xl">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">{c.icon}</div>
+                  <div>
+                    <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-0.5">{c.label}</div>
+                    {c.href
+                      ? <a href={c.href} target="_blank" rel="noopener noreferrer" className="font-medium text-foreground hover:text-primary transition-colors">{c.value}</a>
+                      : <span className="font-medium text-foreground">{c.value}</span>
+                    }
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Form */}
+          <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+            <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
+              <h3 className="font-display text-xl font-bold mb-6">Envoyez-nous un message</h3>
+              {sent ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <ShieldCheck size={32} className="text-primary" />
+                  </div>
+                  <p className="font-semibold text-lg">Message prêt !</p>
+                  <p className="text-muted-foreground text-sm">Votre client mail s'est ouvert. Envoyez le message depuis votre boîte.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Nom complet</label>
+                    <input
+                      type="text" required placeholder="Votre nom"
+                      value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Email</label>
+                    <input
+                      type="email" required placeholder="votre@email.com"
+                      value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Message</label>
+                    <textarea
+                      required rows={5} placeholder="Décrivez votre besoin…"
+                      value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition resize-none"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                    Envoyer le message <ArrowRight size={16} className="ml-2" />
+                  </Button>
+                </form>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const CTA = () => {
   return (
     <section className="py-24 relative overflow-hidden">
@@ -825,7 +1098,11 @@ export default function Home() {
           <Steps />
           <Features />
           <AppScreenshots />
+          <Testimonials />
+          <CoveragePricing />
           <Fleet />
+          <FAQ />
+          <Contact />
           <LocalTouch />
           <CTA />
         </main>
