@@ -78,7 +78,6 @@ export const translations = {
       subheading: "Disponible sur Android et iOS — simple, rapide, bilingue Français / Arabe.",
       screens: [
         "Client ou Chauffeur",
-        "Types de véhicules",
         "Choisir un chauffeur",
         "Suivi en temps réel",
         "Suivi de la demande",
@@ -274,7 +273,6 @@ export const translations = {
       subheading: "متاح على Android و iOS — بسيط وسريع وثنائي اللغة عربي / فرنسي.",
       screens: [
         "عميل أو سائق",
-        "أنواع المركبات",
         "اختيار سائق",
         "تتبع مباشر",
         "متابعة الطلب",
