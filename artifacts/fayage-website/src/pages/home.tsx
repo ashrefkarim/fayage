@@ -236,7 +236,7 @@ const Hero = () => {
           >
             <div className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl shadow-primary/10">
               <img
-                src={import.meta.env.BASE_URL + 'hero.png'}
+                src={import.meta.env.BASE_URL + 'hero.jpg'}
                 alt="Transport logistique au Maroc"
                 className="w-full h-full object-cover"
               />
