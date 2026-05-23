@@ -313,9 +313,9 @@ const ValueProps = () => {
             </ul>
 
             <img
-              src={import.meta.env.BASE_URL + 'app-drivers.jpg'}
+              src={import.meta.env.BASE_URL + 'client.png'}
               alt="Client Fayage"
-              className="w-full h-48 object-cover object-top rounded-xl mb-6 shadow-sm"
+              className="w-full h-48 object-cover rounded-xl mb-6 shadow-sm"
             />
 
             <Button variant="outline" onClick={() => open("client")} className="w-full rounded-xl h-12 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
@@ -352,9 +352,9 @@ const ValueProps = () => {
             </ul>
 
             <img
-              src={import.meta.env.BASE_URL + 'app-drivers.jpg'}
+              src={import.meta.env.BASE_URL + 'driver.png'}
               alt="Chauffeur Fayage"
-              className="w-full h-48 object-cover object-top rounded-xl mb-6 shadow-sm opacity-90"
+              className="w-full h-48 object-cover rounded-xl mb-6 shadow-sm opacity-90"
             />
 
             <Button onClick={() => open("chauffeur")} className="w-full rounded-xl h-12 bg-accent hover:bg-accent/90 text-accent-foreground border-none transition-colors">
@@ -424,9 +424,9 @@ const Features = () => {
               viewport={{ once: true }}
             >
               <img
-                src={import.meta.env.BASE_URL + 'hero.jpg'}
+                src={import.meta.env.BASE_URL + 'app-mockup.png'}
                 alt="Interface de l'application Fayage"
-                className="w-full h-full object-cover rounded-2xl drop-shadow-2xl"
+                className="w-full h-full object-contain drop-shadow-2xl"
               />
             </motion.div>
           </div>
