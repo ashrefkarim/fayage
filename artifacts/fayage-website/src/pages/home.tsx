@@ -418,15 +418,15 @@ const Features = () => {
           <div className="flex-1 w-full relative">
             <div className="absolute inset-0 bg-primary/5 rounded-[3rem] transform -rotate-3 scale-105"></div>
             <motion.div
-              className="relative bg-background border border-border shadow-xl rounded-[2.5rem] overflow-hidden aspect-[4/3] flex items-center justify-center p-8"
+              className="relative rounded-[2rem] overflow-hidden aspect-square shadow-2xl"
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
               <img
-                src={import.meta.env.BASE_URL + 'app-mockup.png'}
+                src={import.meta.env.BASE_URL + 'app-showcase.png'}
                 alt="Interface de l'application Fayage"
-                className="w-full h-full object-contain drop-shadow-2xl"
+                className="w-full h-full object-cover"
               />
             </motion.div>
           </div>
