@@ -69,6 +69,15 @@ export function ThemedText({
   };
 
   return (
-    <Text style={[{ color: getColor() }, getTypeStyle(), style]} {...rest} />
+    <Text
+      allowFontScaling={false}
+      style={[
+        { color: getColor() },
+        Platform.OS === "android" ? { includeFontPadding: false } : {},
+        getTypeStyle(),
+        style,
+      ]}
+      {...rest}
+    />
   );
 }

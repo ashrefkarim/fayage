@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, StyleSheet, TextInputProps } from "react-native";
+import { View, TextInput, StyleSheet, TextInputProps, Platform } from "react-native";
 import { Icon, IconName } from "@/components/Icon";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -28,11 +28,11 @@ export function PhoneInput({ label, error, value, onChangeText, style, ...props 
   return (
     <View style={styles.container}>
       {label ? (
-        <ThemedText 
+        <ThemedText
           type="label"
           style={[
-            styles.label, 
-            { 
+            styles.label,
+            {
               textAlign: isRTL ? "right" : "left",
               color: isFocused ? theme.primary : theme.textSecondary,
             }
@@ -80,6 +80,7 @@ export function PhoneInput({ label, error, value, onChangeText, style, ...props 
           value={displayValue}
           onChangeText={handleChangeText}
           maxLength={10}
+          allowFontScaling={false}
           {...props}
         />
       </View>
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    height: Spacing.inputHeight,
+    minHeight: Spacing.inputHeight,
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.sm,
     gap: Spacing.sm,
@@ -127,13 +128,16 @@ const styles = StyleSheet.create({
   prefix: {
     fontSize: 16,
     fontFamily: "Poppins_500Medium",
-  },
+    includeFontPadding: false,
+  } as any,
   input: {
     flex: 1,
     fontSize: 16,
-    height: "100%",
+    paddingVertical: Platform.OS === "android" ? 10 : 0,
     fontFamily: "Poppins_400Regular",
-  },
+    textAlignVertical: "center",
+    includeFontPadding: false,
+  } as any,
   errorContainer: {
     flexDirection: "row",
     alignItems: "center",

@@ -3,6 +3,7 @@ import {
   View,
   StyleSheet,
   Dimensions,
+  useWindowDimensions,
   Pressable,
   StatusBar,
   Animated,
@@ -17,8 +18,9 @@ import { ThemedText } from "@/components/ThemedText";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
-const { width, height } = Dimensions.get("window");
 export const ONBOARDING_SEEN_KEY = "@fayage/onboarding_seen";
+// Keep static dimensions only for StyleSheet blob positioning (decorative, non-critical)
+const { height: staticHeight } = Dimensions.get("window");
 
 interface Slide {
   key: string;
@@ -60,10 +62,10 @@ const SLIDES: Slide[] = [
   },
 ];
 
-const CARD_HEIGHT = height * 0.46;
-const VISUAL_HEIGHT = height - CARD_HEIGHT;
-
 export default function OnboardingScreen() {
+  const { height } = useWindowDimensions();
+  const CARD_HEIGHT = height * 0.46;
+  const VISUAL_HEIGHT = height - CARD_HEIGHT;
   const insets = useSafeAreaInsets();
   const { t, isRTL } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -171,7 +173,7 @@ export default function OnboardingScreen() {
       <View style={[styles.blob, styles.blobBR, { backgroundColor: slide.ringColor, opacity: 0.14 }]} />
 
       {/* ── Visual zone ── */}
-      <View style={[styles.visualZone, { height: VISUAL_HEIGHT, paddingTop: insets.top + 12 }]}>
+      <View style={[styles.visualZone, { flex: 1, minHeight: VISUAL_HEIGHT * 0.8, paddingTop: insets.top + 12 }]}>
         {/* Skip */}
         {!isLast && (
           <Pressable
@@ -247,7 +249,7 @@ export default function OnboardingScreen() {
       </View>
 
       {/* ── Bottom card ── */}
-      <View style={[styles.card, { paddingBottom: insets.bottom + 32 }]}>
+      <View style={[styles.card, { height: CARD_HEIGHT, paddingBottom: Math.max(insets.bottom + 24, 32) }]}>
         {/* Card top notch */}
         <View style={[styles.cardNotch, { backgroundColor: slide.accent }]} />
 
@@ -319,7 +321,7 @@ const styles = StyleSheet.create({
   blobBR: {
     width: 220,
     height: 220,
-    bottom: height * 0.44,
+    bottom: staticHeight * 0.44,
     right: -60,
   },
 
@@ -400,9 +402,8 @@ const styles = StyleSheet.create({
     lineHeight: 70,
   },
 
-  // Card
+  // Card — height is passed as inline style (computed from useWindowDimensions)
   card: {
-    height: CARD_HEIGHT,
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 36,
     borderTopRightRadius: 36,

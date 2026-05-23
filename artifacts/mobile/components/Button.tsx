@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { StyleSheet, Pressable, ViewStyle, StyleProp, ActivityIndicator, View } from "react-native";
+import { StyleSheet, Pressable, ViewStyle, StyleProp, ActivityIndicator, Platform } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useAnimatedStyle,
@@ -63,11 +63,11 @@ export function Button({
     }
   };
 
-  const getHeight = () => {
+  const getSizeStyle = () => {
     switch (size) {
-      case "sm": return 44;
-      case "lg": return 60;
-      default: return Spacing.buttonHeight;
+      case "sm": return { minHeight: 44, paddingVertical: 10 };
+      case "lg": return { minHeight: 60, paddingVertical: 18 };
+      default: return { minHeight: Spacing.buttonHeight, paddingVertical: 14 };
     }
   };
 
@@ -110,6 +110,8 @@ export function Button({
     return children;
   };
 
+  const sizeStyle = getSizeStyle();
+
   if (variant === "primary" || variant === "secondary") {
     const gradientColors = variant === "primary"
       ? Gradients.primary as [string, string]
@@ -134,7 +136,7 @@ export function Button({
           style={[
             styles.button,
             Shadows.md,
-            { height: getHeight() },
+            sizeStyle,
           ]}
         >
           {renderContent()}
@@ -152,7 +154,7 @@ export function Button({
       style={[
         styles.button,
         {
-          height: getHeight(),
+          ...sizeStyle,
           backgroundColor: "transparent",
           borderWidth: variant === "outline" ? 2 : 0,
           borderColor: theme.primary,
@@ -169,7 +171,6 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    height: Spacing.buttonHeight,
     borderRadius: BorderRadius.md,
     alignItems: "center",
     justifyContent: "center",
@@ -178,5 +179,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontFamily: "Poppins_600SemiBold",
     fontWeight: "600",
-  },
+    includeFontPadding: false,
+  } as any,
 });

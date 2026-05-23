@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, StyleSheet, TextInputProps, Pressable } from "react-native";
+import { View, TextInput, StyleSheet, TextInputProps, Pressable, Platform } from "react-native";
 import { Icon, IconName } from "@/components/Icon";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -21,11 +21,11 @@ export function Input({ label, icon, error, style, secureTextEntry, ...props }: 
   return (
     <View style={styles.container}>
       {label ? (
-        <ThemedText 
+        <ThemedText
           type="label"
           style={[
-            styles.label, 
-            { 
+            styles.label,
+            {
               textAlign: isRTL ? "right" : "left",
               color: isFocused ? theme.primary : theme.textSecondary,
             }
@@ -68,10 +68,11 @@ export function Input({ label, icon, error, style, secureTextEntry, ...props }: 
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           secureTextEntry={secureTextEntry && !showPassword}
+          allowFontScaling={false}
           {...props}
         />
         {secureTextEntry ? (
-          <Pressable 
+          <Pressable
             onPress={() => setShowPassword(!showPassword)}
             style={styles.eyeButton}
           >
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    height: Spacing.inputHeight,
+    minHeight: Spacing.inputHeight,
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.sm,
     gap: Spacing.sm,
@@ -121,9 +122,11 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    height: "100%",
+    paddingVertical: Platform.OS === "android" ? 10 : 0,
     fontFamily: "Poppins_400Regular",
-  },
+    textAlignVertical: "center",
+    includeFontPadding: false,
+  } as any,
   eyeButton: {
     padding: Spacing.sm,
   },
