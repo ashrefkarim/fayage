@@ -171,7 +171,7 @@ export default function DriverWalletScreen() {
 
   const handleRequestWithdrawal = async () => {
     if (!user?.id) return;
-    const nameToUse = driverName.trim() || user?.name || t("driver");
+    const nameToUse = driverName.trim() || user?.fullName || t("driver");
     setSubmitting(true);
     try {
       const phone = user.phone?.replace(/^0/, "+212").replace(/\s/g, "") || "";
@@ -317,7 +317,7 @@ export default function DriverWalletScreen() {
           <View style={{ flex: 1 }}>
             <ThemedText style={styles.driverGreeting}>{t("myWallet")}</ThemedText>
             <ThemedText style={styles.driverName} numberOfLines={1}>
-              {user?.name || t("driver")}
+              {user?.fullName || t("driver")}
             </ThemedText>
           </View>
         </View>
@@ -360,7 +360,7 @@ export default function DriverWalletScreen() {
 
       {/* Stats row */}
       <View style={styles.statsRow}>
-        <View style={[styles.statCard, { backgroundColor: theme.backgroundCard, borderColor: theme.border }]}>
+        <View style={[styles.statCard, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
           <View style={[styles.statIconWrap, { backgroundColor: "#DCFCE7" }]}>
             <Icon name="trending-up" size={18} color="#16A34A" />
           </View>
@@ -370,7 +370,7 @@ export default function DriverWalletScreen() {
           <ThemedText style={[styles.statUnit, { color: "#16A34A" }]}>MAD</ThemedText>
           <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>{t("totalEarned")}</ThemedText>
         </View>
-        <View style={[styles.statCard, { backgroundColor: theme.backgroundCard, borderColor: theme.border }]}>
+        <View style={[styles.statCard, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
           <View style={[styles.statIconWrap, { backgroundColor: "#DBEAFE" }]}>
             <Icon name="check-circle" size={18} color="#2563EB" />
           </View>
@@ -492,7 +492,7 @@ export default function DriverWalletScreen() {
                   <TextInput
                     value={driverName}
                     onChangeText={setDriverName}
-                    placeholder={user?.name || t("yourFullName")}
+                    placeholder={user?.fullName || t("yourFullName")}
                     placeholderTextColor={theme.textSecondary}
                     style={[styles.nameInput, { color: theme.text }]}
                     autoCapitalize="words"

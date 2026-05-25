@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { View, StyleSheet, Pressable, Modal, TextInput, Platform, KeyboardAvoidingView, Linking, Image, ScrollView, ActivityIndicator } from "react-native";
+import { View, StyleSheet, Pressable, Modal, TextInput, Platform, KeyboardAvoidingView, Linking, Image, ScrollView, ActivityIndicator, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { SignatureCapture } from "@/components/SignatureCapture";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -1202,7 +1202,7 @@ export default function RequestDetailsScreen() {
         requestId={request.id}
         otherPartyName={request.driverName || "Chauffeur"}
         onClose={() => setShowQuickMessage(false)}
-        onSent={() => fetchDriverUnreadCount(request.id)}
+        onSent={() => fetchDriverUnreadCount()}
       />
 
       {/* ── Client delivery confirmation modal (signature + delivery note) ── */}
@@ -1878,22 +1878,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     minHeight: 80,
     textAlignVertical: "top",
-  },
-  badge: {
-    position: "absolute",
-    top: -6,
-    right: -6,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 4,
-  },
-  badgeText: {
-    color: "#FFFFFF",
-    fontSize: 10,
-    fontWeight: "700",
   },
   offersSection: {
     gap: Spacing.md,

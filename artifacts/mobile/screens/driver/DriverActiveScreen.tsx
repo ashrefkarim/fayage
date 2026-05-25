@@ -45,7 +45,7 @@ export default function DriverActiveScreen() {
 
   const requests = user ? getDriverRequests(user.id) : [];
   const activeRequests = requests.filter(
-    (r) => r.status !== "delivered" && r.status !== "completed" && r.status !== "cancelled"
+    (r) => r.status !== "delivered" && r.status !== "cancelled"
   );
 
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});

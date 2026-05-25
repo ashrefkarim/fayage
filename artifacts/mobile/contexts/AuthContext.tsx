@@ -42,6 +42,7 @@ export type VerificationStatus = "pending_verification" | "verified" | "rejected
 export interface DriverDocuments {
   cinFront?: string;
   cinBack?: string;
+  selfieWithCin?: string;
   drivingLicenseFront?: string;
   drivingLicenseBack?: string;
   vehicleRegistrationFront?: string;

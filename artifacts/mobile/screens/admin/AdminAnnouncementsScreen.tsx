@@ -392,7 +392,7 @@ export default function AdminAnnouncementsScreen() {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+          <View style={[styles.modalContent, { backgroundColor: theme.backgroundDefault }]}>
             <View style={[styles.modalHeader, isRTL && styles.rtlRow]}>
               <ThemedText style={styles.modalTitle}>
                 {editingAnnouncement ? t("editAnnouncement") : t("newAnnouncement")}

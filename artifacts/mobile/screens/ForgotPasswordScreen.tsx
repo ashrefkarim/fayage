@@ -274,7 +274,7 @@ export default function ForgotPasswordScreen() {
           }}
           keyboardType="email-address"
           autoCapitalize="none"
-          leftIcon="mail"
+          icon="mail"
         />
       </View>
 
@@ -366,7 +366,7 @@ export default function ForgotPasswordScreen() {
           }}
           keyboardType="number-pad"
           maxLength={6}
-          leftIcon="key"
+          icon="lock"
         />
       </View>
 
@@ -436,7 +436,7 @@ export default function ForgotPasswordScreen() {
             setError("");
           }}
           secureTextEntry
-          leftIcon="lock"
+          icon="lock"
         />
 
         <Input
@@ -448,7 +448,7 @@ export default function ForgotPasswordScreen() {
             setError("");
           }}
           secureTextEntry
-          leftIcon="check-circle"
+          icon="check-circle"
         />
       </View>
 
@@ -494,7 +494,7 @@ export default function ForgotPasswordScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.backgroundDefault }]}>
       <LinearGradient
         colors={gradients.primary as [string, string, ...string[]]}
         start={{ x: 0, y: 0 }}
@@ -536,7 +536,7 @@ export default function ForgotPasswordScreen() {
         contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.card, { backgroundColor: theme.card, ...Shadows.lg }]}>
+        <View style={[styles.card, { backgroundColor: theme.backgroundDefault, ...Shadows.lg }]}>
           {renderStepIndicator()}
           
           {step === "email" && renderEmailStep()}
@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xxl,
+    paddingBottom: Spacing["2xl"],
   },
   headerTop: {
     flexDirection: "row",

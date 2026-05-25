@@ -244,7 +244,7 @@ export default function AdminVerificationScreen() {
             <Icon name="user" size={24} color={theme.primary} />
           </View>
           <View style={[styles.driverInfo, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
-            <ThemedText type="subtitle">{item.fullName}</ThemedText>
+            <ThemedText type="h4">{item.fullName}</ThemedText>
             <ThemedText style={{ color: theme.textSecondary, fontSize: 13 }}>
               {item.phone}
             </ThemedText>
@@ -316,7 +316,7 @@ export default function AdminVerificationScreen() {
         }
         ListEmptyComponent={
           <EmptyState
-            icon="users"
+            image={require("@/assets/images/empty-requests.png") as any}
             title={t("noDriversFound")}
             subtitle={t("noDriversMatchingFilter")}
           />
@@ -366,7 +366,7 @@ export default function AdminVerificationScreen() {
                 </View>
 
                 <View style={styles.section}>
-                  <ThemedText type="subtitle" style={styles.sectionTitle}>
+                  <ThemedText type="h4" style={styles.sectionTitle}>
                     {t("driverInfo")}
                   </ThemedText>
                   <Card style={styles.infoCard}>
@@ -384,7 +384,7 @@ export default function AdminVerificationScreen() {
                 </View>
 
                 <View style={styles.section}>
-                  <ThemedText type="subtitle" style={styles.sectionTitle}>
+                  <ThemedText type="h4" style={styles.sectionTitle}>
                     {t("documents")}
                   </ThemedText>
                   <View style={styles.documentsGrid}>
@@ -403,7 +403,7 @@ export default function AdminVerificationScreen() {
                 </View>
 
                 <View style={styles.section}>
-                  <ThemedText type="subtitle" style={styles.sectionTitle}>
+                  <ThemedText type="h4" style={styles.sectionTitle}>
                     {t("verificationNotes")}
                   </ThemedText>
                   <TextInput

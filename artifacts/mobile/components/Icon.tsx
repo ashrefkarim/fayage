@@ -106,7 +106,10 @@ type IconName =
   | "headphones"
   | "user-x"
   | "percent"
-  | "circle";
+  | "circle"
+  | "loader"
+  | "hash"
+  | "inbox";
 
 interface IconProps {
   name: IconName;
@@ -220,6 +223,9 @@ const iconSymbols: Record<IconName, string> = {
   "user-x": "👤",
   percent: "%",
   circle: "○",
+  loader: "⟳",
+  hash: "#",
+  inbox: "📥",
 };
 
 export function Icon({ name, size = 24, color = "#000", style }: IconProps) {

@@ -144,7 +144,7 @@ export default function EditDocumentsScreen() {
           onPress={() => pickImage(item.key)}
         >
           <View style={styles.documentContent}>
-            <View style={[styles.thumbnailContainer, { backgroundColor: theme.backgroundElevated }]}>
+            <View style={[styles.thumbnailContainer, { backgroundColor: theme.backgroundSecondary }]}>
               {hasImage ? (
                 <Image source={{ uri: documents[item.key] }} style={styles.thumbnail} />
               ) : (

@@ -245,7 +245,7 @@ export default function ClientHomeScreen() {
                 onPress={() => setIsMapFullscreen(true)}
                 style={[styles.expandBtn, { backgroundColor: theme.backgroundDefault }]}
               >
-                <Icon name="maximize-2" size={16} color={theme.primary} />
+                <Icon name="maximize" size={16} color={theme.primary} />
               </Pressable>
             </View>
 

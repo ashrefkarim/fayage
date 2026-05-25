@@ -37,6 +37,7 @@ interface FormErrors {
   vehicleRegistrationFront?: string;
   vehicleRegistrationBack?: string;
   vehicleInsurance?: string;
+  selfieWithCin?: string;
   terms?: string;
 }
 

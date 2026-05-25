@@ -244,7 +244,7 @@ export default function AdminPaymentsScreen() {
             style={[
               styles.filterChip,
               {
-                backgroundColor: filter === f.key ? theme.primary : theme.card,
+                backgroundColor: filter === f.key ? theme.primary : theme.backgroundSecondary,
                 borderColor: filter === f.key ? theme.primary : theme.border,
               },
             ]}
@@ -274,7 +274,7 @@ export default function AdminPaymentsScreen() {
           }
           ListEmptyComponent={
             <EmptyState
-              icon="credit-card"
+              image={require("@/assets/images/empty-requests.png")}
               title={t("noPayments")}
               subtitle={t("noPaymentsDesc")}
             />
@@ -346,7 +346,7 @@ export default function AdminPaymentsScreen() {
                       />
                     </>
                   ) : (
-                    <View style={[styles.noProof, { backgroundColor: theme.card }]}>
+                    <View style={[styles.noProof, { backgroundColor: theme.backgroundSecondary }]}>
                       <Icon name="image" size={24} color={theme.textSecondary} />
                       <ThemedText style={{ color: theme.textSecondary, marginTop: 6 }}>
                         Aucune preuve soumise

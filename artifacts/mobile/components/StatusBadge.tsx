@@ -5,7 +5,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { BorderRadius, Spacing } from "@/constants/theme";
 
-type Status = "pending" | "awaiting_client_approval" | "waiting_for_payment" | "paid" | "accepted" | "driver_arrived" | "pickup" | "in_transit" | "delivered" | "cancelled";
+type Status = "pending" | "awaiting_client_approval" | "waiting_for_payment" | "paid" | "accepted" | "driver_arrived" | "pickup" | "in_transit" | "delivered" | "cancelled" | "pending_verification" | "verified" | "rejected";
 
 interface StatusBadgeProps {
   status: Status;

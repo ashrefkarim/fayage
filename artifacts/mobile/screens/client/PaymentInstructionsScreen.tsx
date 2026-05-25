@@ -166,7 +166,7 @@ export default function PaymentInstructionsScreen() {
   const total = payment?.amount || 0;
   const receiverPhone = payment?.receiverPhone || "";
   const receiverName = payment?.receiverName || "FAYAGE";
-  const paymentStatus = payment?.status;
+  const paymentStatus = payment?.status as string | undefined;
   const isAlreadySubmitted = paymentStatus === "pending_review" || paymentStatus === "accepted";
   const method = METHOD_CONFIG[selectedMethod];
   const currentRib = selectedMethod === "wafacash" ? ribWafacash : ribCashplus;
@@ -180,7 +180,7 @@ export default function PaymentInstructionsScreen() {
       {/* Compact nav header */}
       <View style={[styles.navBar, { borderBottomColor: cardBorder }]}>
         <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={styles.backBtn}>
-          <Icon name="arrow-left" size={20} color={theme.textPrimary} />
+          <Icon name="arrow-left" size={20} color={theme.text} />
         </Pressable>
         <ThemedText style={styles.navTitle}>{t("paymentInstructions")}</ThemedText>
         <View style={{ width: 40 }} />
@@ -209,7 +209,7 @@ export default function PaymentInstructionsScreen() {
               </View>
             )}
 
-            {isAlreadySubmitted && paymentStatus !== "rejected" && (
+            {isAlreadySubmitted && (
               <View style={[styles.statusBanner, { backgroundColor: "#F0FDF4", borderLeftColor: "#22C55E" }]}>
                 <View style={[styles.statusIconWrap, { backgroundColor: "#DCFCE7" }]}>
                   <Icon name="clock" size={18} color="#16A34A" />
@@ -280,7 +280,7 @@ export default function PaymentInstructionsScreen() {
                         <View style={[styles.methodIconCircle, { backgroundColor: isSelected ? "rgba(255,255,255,0.2)" : cfg.glow }]}>
                           <Icon name={cfg.icon} size={18} color={isSelected ? "#FFFFFF" : cfg.accent} />
                         </View>
-                        <ThemedText style={[styles.methodName, { color: isSelected ? "#FFFFFF" : theme.textPrimary }]}>
+                        <ThemedText style={[styles.methodName, { color: isSelected ? "#FFFFFF" : theme.text }]}>
                           {cfg.label}
                         </ThemedText>
                         {isSelected && (
@@ -313,7 +313,7 @@ export default function PaymentInstructionsScreen() {
                       <ThemedText style={[styles.ribLabel, { color: theme.textSecondary }]}>
                         {method.label} RIB
                       </ThemedText>
-                      <ThemedText style={[styles.ribValue, { color: theme.textPrimary }]}>
+                      <ThemedText style={[styles.ribValue, { color: theme.text }]}>
                         {currentRib}
                       </ThemedText>
                     </View>
@@ -347,7 +347,7 @@ export default function PaymentInstructionsScreen() {
                   </LinearGradient>
                   <View style={{ flex: 1, marginLeft: isRTL ? 0 : 12, marginRight: isRTL ? 12 : 0 }}>
                     <ThemedText style={[styles.beneficiaryLabel, { color: theme.textSecondary }]}>{t("paymentReceiver")}</ThemedText>
-                    <ThemedText style={[styles.beneficiaryValue, { color: theme.textPrimary }]}>{receiverName}</ThemedText>
+                    <ThemedText style={[styles.beneficiaryValue, { color: theme.text }]}>{receiverName}</ThemedText>
                   </View>
                 </View>
 
@@ -360,7 +360,7 @@ export default function PaymentInstructionsScreen() {
                       </View>
                       <View style={{ flex: 1, marginLeft: isRTL ? 0 : 12, marginRight: isRTL ? 12 : 0 }}>
                         <ThemedText style={[styles.beneficiaryLabel, { color: theme.textSecondary }]}>{t("paymentReceiverPhone")}</ThemedText>
-                        <ThemedText style={[styles.beneficiaryValue, { color: theme.textPrimary }]}>{receiverPhone}</ThemedText>
+                        <ThemedText style={[styles.beneficiaryValue, { color: theme.text }]}>{receiverPhone}</ThemedText>
                       </View>
                       <Pressable onPress={() => copyToClipboard(receiverPhone)} hitSlop={10}>
                         <Icon name="copy" size={16} color={theme.primary} />
@@ -372,7 +372,7 @@ export default function PaymentInstructionsScreen() {
             </View>
 
             {/* ── UPLOAD PROOF ── */}
-            {(!isAlreadySubmitted || paymentStatus === "rejected") && (
+            {!isAlreadySubmitted && (
               <View style={styles.section}>
                 <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>{t("uploadProof")}</ThemedText>
 
@@ -406,7 +406,7 @@ export default function PaymentInstructionsScreen() {
                           <View style={[styles.uploadIconCircle, { backgroundColor: theme.primary + "15" }]}>
                             <Icon name={icon} size={22} color={theme.primary} />
                           </View>
-                          <ThemedText style={[styles.uploadLabel, { color: theme.textPrimary }]}>{label}</ThemedText>
+                          <ThemedText style={[styles.uploadLabel, { color: theme.text }]}>{label}</ThemedText>
                           <ThemedText style={[styles.uploadHint, { color: theme.textSecondary }]}>
                             {icon === "camera" ? "JPG, PNG" : "Galerie"}
                           </ThemedText>
@@ -434,7 +434,7 @@ export default function PaymentInstructionsScreen() {
                   >
                     <Icon name="hash" size={16} color={txFocused ? theme.primary : theme.textSecondary} />
                     <TextInput
-                      style={[styles.inputField, { color: theme.textPrimary }]}
+                      style={[styles.inputField, { color: theme.text }]}
                       placeholder={t("enterTransactionRef")}
                       placeholderTextColor={theme.textSecondary}
                       value={txRef}

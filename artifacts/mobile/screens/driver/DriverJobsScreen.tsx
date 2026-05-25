@@ -530,8 +530,7 @@ export default function DriverJobsScreen() {
                 </View>
               ) : driverLocation ? (
                 <MapViewComponent
-                  pickup={driverLocation}
-                  showDriverMarker
+                  pickupLocation={driverLocation}
                   driverLocation={driverLocation}
                   style={styles.locationMap}
                 />
