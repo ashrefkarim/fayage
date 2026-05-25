@@ -99,7 +99,14 @@ type IconName =
   | "volume-2"
   | "volume-x"
   | "mic"
-  | "mic-off";
+  | "mic-off"
+  | "alert-triangle"
+  | "check-check"
+  | "clipboard-check"
+  | "headphones"
+  | "user-x"
+  | "percent"
+  | "circle";
 
 interface IconProps {
   name: IconName;
@@ -206,6 +213,13 @@ const iconSymbols: Record<IconName, string> = {
   "volume-x": "🔇",
   mic: "🎤",
   "mic-off": "🎤",
+  "alert-triangle": "⚠",
+  "check-check": "✓✓",
+  "clipboard-check": "📋",
+  headphones: "🎧",
+  "user-x": "👤",
+  percent: "%",
+  circle: "○",
 };
 
 export function Icon({ name, size = 24, color = "#000", style }: IconProps) {

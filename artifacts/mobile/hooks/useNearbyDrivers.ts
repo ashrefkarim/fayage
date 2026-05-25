@@ -31,7 +31,7 @@ export function useNearbyDrivers({
   const [drivers, setDrivers] = useState<NearbyDriver[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchNearbyDrivers = useCallback(async () => {
     if (!enabled) return;

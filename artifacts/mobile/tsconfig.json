@@ -7,7 +7,7 @@
       "@/*": ["./*"],
       "@shared/*": ["./shared/*"]
     },
-    "types": ["node"]
+    "types": []
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "build", "dist", "**/*.test.ts"]

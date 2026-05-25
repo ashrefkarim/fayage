@@ -36,6 +36,7 @@ interface FormErrors {
   drivingLicenseBack?: string;
   vehicleRegistrationFront?: string;
   vehicleRegistrationBack?: string;
+  vehicleInsurance?: string;
   terms?: string;
 }
 

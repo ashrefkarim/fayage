@@ -14,7 +14,7 @@ export function useDriverLocationTracking({
   updateInterval = 15000,
 }: UseDriverLocationTrackingOptions = {}) {
   const { user } = useAuth();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isDriver = user?.role === "driver";
   const isVerified = user?.verificationStatus === "verified";
 

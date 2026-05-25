@@ -353,7 +353,7 @@ export function OfferDetailModal({
                     >
                       <Image source={{ uri }} style={styles.thumb} />
                       <View style={styles.zoomBadge}>
-                        <Icon name="maximize-2" size={11} color="#fff" />
+                        <Icon name="maximize" size={11} color="#fff" />
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -412,7 +412,7 @@ export function OfferDetailModal({
               style={[styles.negotiateBtn, { borderColor: theme.primary }]}
               activeOpacity={0.75}
             >
-              <Icon name="message-square" size={16} color={theme.primary} />
+              <Icon name="message-circle" size={16} color={theme.primary} />
               <ThemedText style={[styles.negotiateBtnText, { color: theme.primary }]}>
                 {t("negotiate")}
               </ThemedText>

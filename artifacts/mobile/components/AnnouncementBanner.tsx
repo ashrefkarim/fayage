@@ -104,7 +104,7 @@ export function AnnouncementBanner({ audience }: AnnouncementBannerProps) {
       <View style={styles.content}>
         <View style={styles.iconContainer}>
           <Icon 
-            name={currentAnnouncement.type === "urgent" ? "alert-circle" : currentAnnouncement.type === "warning" ? "alert-triangle" : "info"} 
+            name={currentAnnouncement.type === "urgent" ? "alert-circle" : currentAnnouncement.type === "warning" ? "alert-circle" : "info"} 
             size={20} 
             color={colors.icon} 
           />

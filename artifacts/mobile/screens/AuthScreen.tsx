@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, StyleSheet, Image, Pressable, Dimensions, Platform, Animated, TouchableOpacity, Linking } from "react-native";
+import { View, StyleSheet, Image, Pressable, Dimensions, Platform, Animated, TouchableOpacity, Linking, Alert } from "react-native";
 import PermissionModal from "@/components/PermissionModal";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
